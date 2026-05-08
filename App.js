@@ -6,6 +6,7 @@ import StatPieChart from "./components/StatPieChart";
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
 
 const Stack = createNativeStackNavigator();
+setupDatabase("database.db");
 
 const styles = StyleSheet.create({
     grid: {

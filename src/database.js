@@ -1,106 +1,106 @@
 export async function createTables(db) {
     await db.executeSql("CREATE TABLE Difficolta(\
         id INTEGER PRIMARY KEY,\
-        descrizione TEXT\
+        descrizione TEXT NOT NULL\
     )");
 
     await db.executeSql("CREATE TABLE CategoriaRicetta(\
         id INTEGER PRIMARY KEY,\
-        descrizione TEXT\
+        descrizione TEXT NOT NULL\
     )");
 
     await db.executeSql("CREATE TABLE Ricetta(\
         id INTEGER PRIMARY KEY,\
-        nome TEXT,\
-        tempoPreparazioneMinuti INTEGER,\
-        numeroPorzioni INTEGER,\
-        descrizione TEXT,\
-        difficolta INTEGER,\
-        categoria INTEGER,\
+        nome TEXT NOT NULL,\
+        tempoPreparazioneMinuti INTEGER NOT NULL,\
+        numeroPorzioni INTEGER NOT NULL,\
+        descrizione TEXT NOT NULL,\
+        difficolta INTEGER NOT NULL,\
+        categoria INTEGER NOT NULL,\
         \
-        FOREIGN KEY (difficolta) REFERENCES Difficolta(id)\
-        FOREIGN KEY (categoria) REFERENCES CategoriaRicetta(id)\
+        FOREIGN KEY (difficolta) REFERENCES Difficolta(id) ON DELETE RESTRICT,\
+        FOREIGN KEY (categoria) REFERENCES CategoriaRicetta(id) ON DELETE RESTRICT\
     )");
 
     await db.executeSql("CREATE TABLE GiornoSettimana(\
         id INTEGER PRIMARY KEY,\
-        nome TEXT\
+        nome TEXT NOT NULL\
     )");
 
     await db.executeSql("CREATE TABLE FasciaOraria(\
         id INTEGER PRIMARY KEY,\
-        nome TEXT\
+        nome TEXT NOT NULL\
     )");
 
     await db.executeSql("CREATE TABLE Pasto(\
         id INTEGER PRIMARY KEY,\
-        ricetta INTEGER,\
-        giornoSettimana INTEGER,\
-        fasciaOraria INTEGER,\
+        ricetta INTEGER NOT NULL,\
+        giornoSettimana INTEGER NOT NULL,\
+        fasciaOraria INTEGER NOT NULL,\
         \
-        FOREIGN KEY (ricetta) REFERENCES Ricetta(id),\
-        FOREIGN KEY (giornoSettimana) REFERENCES GiornoSettimana(id)\
-        FOREIGN KEY (fasciaOraria) REFERENCES FasciaOraria(id)\
+        FOREIGN KEY (ricetta) REFERENCES Ricetta(id) ON DELETE CASCADE,\
+        FOREIGN KEY (giornoSettimana) REFERENCES GiornoSettimana(id) ON DELETE RESTRICT\
+        FOREIGN KEY (fasciaOraria) REFERENCES FasciaOraria(id) ON DELETE RESTRICT\
     )");
 
     await db.executeSql("CREATE TABLE UnitaMisura(\
         id INTEGER PRIMARY KEY,\
-        simbolo TEXT\
+        simbolo TEXT NOT NULL\
     )");
 
     await db.executeSql("CREATE TABLE CategoriaAlimento(\
         id INTEGER PRIMARY KEY,\
-        descrizione TEXT\
+        descrizione TEXT NOT NULL\
     )");
 
     await db.executeSql("CREATE TABLE Alimento(\
         id INTEGER PRIMARY KEY,\
         descrizione TEXT,\
-        categoria INTEGER,\
+        categoria INTEGER NOT NULL,\
         \
-        FOREIGN KEY categoria REFERENCES CategoriaAlimento(id)\
+        FOREIGN KEY (categoria) REFERENCES CategoriaAlimento(id) ON DELETE RESTRICT\
     )");
 
     await db.executeSql("CREATE TABLE Ingrediente(\
         id INTEGER PRIMARY KEY,\
-        quantita REAL,\
-        ricetta INTEGER,\
-        unitaMisura INTEGER,\
-        alimento INTEGER,\
+        quantita REAL NOT NULL,\
+        ricetta INTEGER NOT NULL,\
+        unitaMisura INTEGER NOT NULL,\
+        alimento INTEGER NOT NULL,\
         \
-        FOREIGN KEY (alimento) REFERENCES Alimento(id)\
-        FOREIGN KEY (unitaMisura) REFERENCES UnitaMisura(id)\
-        FOREIGN KEY (ricetta) REFERENCES Ricetta(id)\
+        FOREIGN KEY (alimento) REFERENCES Alimento(id) ON DELETE RESTRICT,\
+        FOREIGN KEY (unitaMisura) REFERENCES UnitaMisura(id) ON DELETE RESTRICT,\
+        FOREIGN KEY (ricetta) REFERENCES Ricetta(id) ON DELETE CASCADE\
     )");
 
     await db.executeSql("CREATE TABLE ElementoSpesa(\
         id INTEGER PRIMARY KEY,\
-        nome TEXT,\
-        quantita REAL,\
-        alimento INTEGER,\
+        nome TEXT NOT NULL,\
+        quantita REAL NOT NULL,\
+        alimento INTEGER NOT NULL,\
         dataAcquisto TEXT,\
-        unitaMisura INTEGER,\
+        unitaMisura INTEGER NOT NULL,\
         \
-        FOREIGN KEY (alimento) REFERENCES Alimento(id),\
-        FOREIGN KEY (unitaMisura) REFERENCES UnitaMisura(id)\
+        FOREIGN KEY (alimento) REFERENCES Alimento(id) ON DELETE RESTRICT,\
+        FOREIGN KEY (unitaMisura) REFERENCES UnitaMisura(id) ON DELETE RESTRICT\
     )");
 
     await db.executeSql("CREATE TABLE ProdottoDispensa(\
         id INTEGER PRIMARY KEY,\
         dataScadenza TEXT,\
-        quantita REAL,\
-        unitaMisura INTEGER,\
-        alimento INTEGER,\
+        quantita REAL NOT NULL,\
+        unitaMisura INTEGER NOT NULL,\
+        alimento INTEGER NOT NULL,\
         \
-        FOREIGN KEY (unitaMisura) REFERENCES UnitaMisura(id),\
-        FOREIGN KEY (alimento) REFERENCES Alimento(id)\
+        FOREIGN KEY (unitaMisura) REFERENCES UnitaMisura(id) ON DELETE RESTRICT,\
+        FOREIGN KEY (alimento) REFERENCES Alimento(id) ON DELETE RESTRICT\
     )");
 
     await db.executeSql("CREATE TABLE Nota(\
         id INTEGER PRIMARY KEY,\
-        descrizione TEXT,\
-        prodottoDispensa INTEGER,\
+        descrizione TEXT NOT NULL,\
+        prodottoDispensa INTEGER NOT NULL,\
         \
-        FOREIGN KEY (prodottoDispensa) REFERENCES ProdottoDispensa(id)\
+        FOREIGN KEY (prodottoDispensa) REFERENCES ProdottoDispensa(id) ON DELETE CASCADE\
     )");
 }

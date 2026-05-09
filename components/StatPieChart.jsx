@@ -50,6 +50,15 @@ const styles = StyleSheet.create({
 
 const colors = ['#1F5C3A', '#2D7A4F', '#52A876', '#A8D9BC'];
 
+/*
+    const series = [
+        { value: 430, label: 'Pomodoro' },
+        { value: 321, label: 'Cipolla rossa di Tropea' },
+        { value: 185, label: 'Tartufo nero' },
+        { value: 123, label: 'Cipolla ramata di Montoro' },
+    ]
+*/
+
 const StatPieChart = ({ widthAndHeight, series, title }) => {
     const coloredSeries = series.map((s, i) => ({
         ...s,

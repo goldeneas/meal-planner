@@ -3,10 +3,17 @@ import { TouchableOpacity, View, Text, StyleSheet, Button } from "react-native";
 import StatCounter from "./components/StatCounter";
 import StatPieChart from "./components/StatPieChart";
 
+import SQLite from 'react-native-sqlite-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
+import { createTables } from './src/database.js'
+
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
 
 const Stack = createNativeStackNavigator();
-setupDatabase("database.db");
+
+SQLite.enablePromise(true);
+const dbPromise = SQLite.openDatabase({ name: "database.db", location: 'default' })
 
 const styles = StyleSheet.create({
     grid: {
@@ -18,7 +25,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '48%',
-        height: '80',
+        height: 80,
         backgroundColor: '#4A90E2',
         borderRadius: 12,
         alignItems: 'center',
@@ -53,8 +60,8 @@ const StatScreen = ({ navigation }) => {
     return (
         <View>
             <View style={styles.grid}>
-                {['Pasti Pianificati', 'Ingredienti Comprati', 'Stats', 'Stats'].map((label, index) => (
-                    <StatCounter counter={index} label={label} />
+                {['Pasti Pianificati', 'Ingredienti Comprati'].map((label, index) => (
+                    <StatCounter key={index} counter={index} label={label} />
                 ))}
                 <StatPieChart widthAndHeight={250} series={series} />
             </View>
@@ -63,6 +70,15 @@ const StatScreen = ({ navigation }) => {
 };
 
 const App = () => {
+    useEffect(() => {
+        async function prepareDB() {
+            const db = await dbPromise;
+            await createTables(db);
+        }
+
+        prepareDB();
+    }, []);
+
     return (
         <NavigationContainer>
             <Stack.Navigator initialRouteName="Home">

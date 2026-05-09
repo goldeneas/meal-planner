@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
 import { createTables } from './src/database.js'
 import StatNextMeal from "./components/StatNextMeal";
+import StatTextHeader from "./components/StatTextHeader";
 
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
 
@@ -64,7 +65,9 @@ const StatScreen = ({ navigation }) => {
                 {['Pasti Pianificati', 'Ingredienti Comprati'].map((label, index) => (
                     <StatCounter key={index} counter={index} label={label} />
                 ))}
+                <StatTextHeader text={"Ingredienti Comuni"} />
                 <StatPieChart widthAndHeight={250} series={series} />
+                <StatTextHeader text={"Prossimi Pasti"} />
                 <StatNextMeal date={"2026-05-04"} mealCategory={"Pranzo"} mealName={"Pasta al pomodoro"} />
             </View>
         </View>

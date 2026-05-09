@@ -7,6 +7,7 @@ import SQLite from 'react-native-sqlite-storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
 import { createTables } from './src/database.js'
+import StatNextMeal from "./components/StatNextMeal";
 
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
 
@@ -64,6 +65,7 @@ const StatScreen = ({ navigation }) => {
                     <StatCounter key={index} counter={index} label={label} />
                 ))}
                 <StatPieChart widthAndHeight={250} series={series} />
+                <StatNextMeal date={"2026-05-04"} mealCategory={"Pranzo"} mealName={"Pasta al pomodoro"} />
             </View>
         </View>
     );

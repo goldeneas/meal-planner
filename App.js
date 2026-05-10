@@ -67,6 +67,7 @@ const StatScreen = ({ navigation }) => {
     return (
         <View>
             <View style={styles.grid}>
+                <StatTextHeader text={"Statistiche"} />
                 {['Pasti Pianificati', 'Ingredienti Comprati'].map((label, index) => (
                     <StatCounter key={index} counter={index} label={label} />
                 ))}

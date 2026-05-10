@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { createTables } from './src/database.js'
 import StatNextMeal from "./components/StatNextMeal";
 import StatTextHeader from "./components/StatTextHeader";
+import PantryScreen from "./screens/PantryScreen";
 
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
 
@@ -46,6 +47,10 @@ const HomeScreen = ({ navigation }) => {
             <Button
                 title="Vai alle stats"
                 onPress={() => navigation.navigate("Stats")}
+            />
+            <Button
+                title="Gestione Dispensa"
+                onPress={() => navigation.navigate("Pantry")}
             />
         </View>
     )
@@ -89,6 +94,7 @@ const App = () => {
             <Stack.Navigator initialRouteName="Home">
                 <Stack.Screen name="Home" component={HomeScreen} />
                 <Stack.Screen name="Stats" component={StatScreen} />
+                <Stack.Screen name="Pantry" component={PantryScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     )

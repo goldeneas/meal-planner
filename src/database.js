@@ -39,7 +39,7 @@ export async function createTables(db) {
         timeSlot INTEGER NOT NULL,\
         \
         FOREIGN KEY (recipe) REFERENCES Recipe(id) ON DELETE CASCADE,\
-        FOREIGN KEY (dayOfWeek) REFERENCES DayOfWeek(id) ON DELETE RESTRICT\
+        FOREIGN KEY (dayOfWeek) REFERENCES DayOfWeek(id) ON DELETE RESTRICT,\
         FOREIGN KEY (timeSlot) REFERENCES TimeSlot(id) ON DELETE RESTRICT\
     )");
 

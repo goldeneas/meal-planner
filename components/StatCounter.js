@@ -23,10 +23,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const StatCounter = ({ counter, label, style = '' }) => {
+const StatCounter = ({ counter, label = 'default', style = '' }) => {
     return (
         <View style={[styles.container, style]}>
-            <Text style={styles.counter}>{counter}</Text>
+            <Text style={styles.counter}>{counter ?? 0}</Text>
             <Text style={styles.label}>{label}</Text>
         </View>
     );

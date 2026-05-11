@@ -106,3 +106,11 @@ export async function createTables(db) {
         FOREIGN KEY (pantryProduct) REFERENCES PantryProduct(id) ON DELETE CASCADE\
     )");
 }
+
+export async function queryAsArray(db, query) {
+    return await db.executeSql(query).rows.raw()
+}
+
+export async function queryCount(db, query) {
+    return await db.executeSql(query)[0].rows.item(0).count;
+}

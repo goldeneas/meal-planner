@@ -3,6 +3,8 @@ import StatTextHeader from "../components/StatTextHeader";
 import StatCounter from "../components/StatCounter";
 import StatPieChart from "../components/StatPieChart";
 import StatBarChart from "../components/StatBarChart";
+import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes, getMostMealByCategory, getMostUsedIngredients, mostMealByCategory, mostRecipesByCategory, mostUsedIngredients } from "../src/stats";
+import { useState, useEffect } from "react";
 
 const styles = StyleSheet.create({
     grid: {
@@ -26,7 +28,41 @@ const styles = StyleSheet.create({
     },
 });
 
-export const StatScreen = ({ navigation }) => {
+export const StatScreen = ({ navigation, db }) => {
+    const [counters, setCounters] = useState([]);
+
+    // carica
+    useEffect(() => {
+        async function loadStats() {
+            const [
+                savedRecipesCount,
+                plannedMealsCount,
+                expiringProductsCount,
+                expiredProductsCount,
+                missingFoodCount,
+                avgRecipePrepTimeMinutes,
+            ] = await Promise.all([
+                countSavedRecipes(db),
+                countPlannedMeals(db),
+                countExpiringProducts(db),
+                countExpiredProducts(db),
+                countMissingFood(db),
+                countAvgRecipePrepTime(db),
+            ]);
+
+            setCounters([
+                { label: 'Ricette Salvate', value: savedRecipesCount },
+                { label: 'Pasti Pianificati', value: plannedMealsCount },
+                { label: 'Prodotti in Scadenza', value: expiringProductsCount },
+                { label: 'Prodotti Scaduti', value: expiredProductsCount },
+                { label: 'Prodotti Mancanti', value: missingFoodCount },
+                { label: 'Tempo Medio\ndi Preparazione', value: avgRecipePrepTimeMinutes },
+            ]);
+        }
+
+        loadStats();
+    }, [db]);
+
     const series = [
         { value: 430, label: 'Pomodoro' },
         { value: 321, label: 'Cipolla rossa di Tropea' },
@@ -38,15 +74,9 @@ export const StatScreen = ({ navigation }) => {
         <ScrollView>
             <View style={styles.grid}>
                 <StatTextHeader text={"Panoramica"} />
-                {['Ricette Salvate',
-                    'Pasti Pianificati',
-                    'Prodotti in Scadenza',
-                    'Prodotti Scaduti',
-                    'Prodotti Mancanti',
-                    '  Tempo Medio \ndi Preparazione']
-                    .map((label, index) => (
-                        <StatCounter key={index} counter={index} label={label} />
-                    ))}
+                {counters.map((entry, index) => (
+                    <StatCounter key={index} counter={entry.value} label={entry.label} />
+                ))}
                 <StatTextHeader text={"Ingredienti Più Usati"} />
                 <StatBarChart series={series} />
                 <StatTextHeader text={"Categorie di Pasti Frequenti"} />

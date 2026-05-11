@@ -1,8 +1,8 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import StatTextHeader from "../components/StatTextHeader";
 import StatCounter from "../components/StatCounter";
 import StatPieChart from "../components/StatPieChart";
-import StatNextMeal from "../components/StatNextMeal";
+import StatBarChart from "../components/StatBarChart";
 
 const styles = StyleSheet.create({
     grid: {
@@ -35,7 +35,7 @@ export const StatScreen = ({ navigation }) => {
     ]
 
     return (
-        <View>
+        <ScrollView>
             <View style={styles.grid}>
                 <StatTextHeader text={"Panoramica"} />
                 {['Pasti Pianificati',
@@ -48,10 +48,12 @@ export const StatScreen = ({ navigation }) => {
                         <StatCounter key={index} counter={index} label={label} />
                     ))}
                 <StatTextHeader text={"Ingredienti Più Usati"} />
+                <StatBarChart series={series} />
+                <StatTextHeader text={"Categoria di Ricetta"} />
                 <StatPieChart widthAndHeight={250} series={series} />
-                <StatTextHeader text={"Prossimi Pasti"} />
-                <StatNextMeal date={"2026-05-04"} mealCategory={"Pranzo"} mealName={"Pasta al pomodoro"} />
+                <StatTextHeader text={"Ricette per Categoria"} />
+                <StatPieChart widthAndHeight={250} series={series} />
             </View>
-        </View>
+        </ScrollView>
     );
 };

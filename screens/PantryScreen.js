@@ -83,7 +83,7 @@ const PantryScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#e8f5e9',
     },
     list: {
         padding: 16,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#e9ecef',
+        borderColor: '#c8e6c9',
         elevation: 2,
     },
     cardHeader: {
@@ -103,9 +103,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-    title: { fontSize: 18, fontWeight: 'bold', color: '#343a40' },
+    title: { fontSize: 18, fontWeight: 'bold', color: '#1b5e20' },
     category: {
-        fontSize: 12, color: '#495057', backgroundColor: '#e9ecef',
+        fontSize: 12, color: '#2e7d32', backgroundColor: '#c8e6c9',
         paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, overflow: 'hidden'
     },
     details: { gap: 4 },

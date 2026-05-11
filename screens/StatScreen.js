@@ -37,11 +37,17 @@ export const StatScreen = ({ navigation }) => {
     return (
         <View>
             <View style={styles.grid}>
-                <StatTextHeader text={"Statistiche"} />
-                {['Pasti Pianificati', 'Ingredienti Comprati'].map((label, index) => (
-                    <StatCounter key={index} counter={index} label={label} />
-                ))}
-                <StatTextHeader text={"Ingredienti Comuni"} />
+                <StatTextHeader text={"Panoramica"} />
+                {['Pasti Pianificati',
+                    'Ingredienti Comprati',
+                    'Ricette in Archivio',
+                    'Prodotti in Scadenza',
+                    'Prodotti Mancanti',
+                    'Tempo Medio di Preparazione']
+                    .map((label, index) => (
+                        <StatCounter key={index} counter={index} label={label} />
+                    ))}
+                <StatTextHeader text={"Ingredienti Più Usati"} />
                 <StatPieChart widthAndHeight={250} series={series} />
                 <StatTextHeader text={"Prossimi Pasti"} />
                 <StatNextMeal date={"2026-05-04"} mealCategory={"Pranzo"} mealName={"Pasta al pomodoro"} />

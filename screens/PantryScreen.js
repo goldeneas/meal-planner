@@ -118,6 +118,17 @@ const PantryScreen = () => {
         }
     };
 
+    const isExpiringSoon = (expirationDate) => {
+        if (!expirationDate) return false;
+        const expDate = new Date(expirationDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        expDate.setHours(0, 0, 0, 0);
+        const diffTime = expDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 3;
+    };
+
     const removePantryItem = (id) => {
         // TODO: DB delete function and then update state
         setPantryItems((prevItems) => prevItems.filter((item) => item.id !== id));
@@ -148,7 +159,9 @@ const PantryScreen = () => {
                         <Text style={styles.text}>Soglia avviso: {item.warningQuantity} {item.unitOfMeasure}</Text>
                     ) : null}
                     {item.expirationDate ? (
-                        <Text style={styles.text}>Scadenza: {item.expirationDate}</Text>
+                        <Text style={[styles.text, isExpiringSoon(item.expirationDate) && styles.warningText]}>
+                            Scadenza: {item.expirationDate} {isExpiringSoon(item.expirationDate) ? '⚠️' : ''}
+                        </Text>
                     ) : null}
                     {item.note ? (
                         <Text style={styles.note}>Note: {item.note}</Text>

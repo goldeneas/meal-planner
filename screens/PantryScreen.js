@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 
 // TODO: wait for DB functions and then uncoment this and remove mock data in fetchPantryItems
 
@@ -47,11 +47,21 @@ const PantryScreen = () => {
 
     };
 
+    const removePantryItem = (id) => {
+        // TODO: Inserisci qui la logica per rimuovere l'ingrediente anche dal DB
+        setPantryItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    };
+
     const renderItem = ({ item }) => (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
                 <Text style={styles.title}>{item.name}</Text>
-                <Text style={styles.category}>{item.category}</Text>
+                <View style={styles.badgeAndAction}>
+                    <Text style={styles.category}>{item.category}</Text>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => removePantryItem(item.id)}>
+                        <Text style={styles.deleteIcon}>🗑</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
             <View style={styles.details}>
                 <Text style={styles.text}>Quantità: {item.quantity} {item.unitOfMeasure}</Text>
@@ -101,10 +111,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
+    badgeAndAction: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     title: { fontSize: 18, fontWeight: 'bold', color: '#1b5e20' },
     category: {
         fontSize: 12, color: '#2e7d32', backgroundColor: '#c8e6c9',
         paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, overflow: 'hidden'
+    },
+    deleteButton: {
+        backgroundColor: '#dc3545',
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    deleteIcon: {
+        color: '#ffffff',
+        fontSize: 16,
     },
     details: { gap: 4 },
     text: { fontSize: 14, color: '#495057' },

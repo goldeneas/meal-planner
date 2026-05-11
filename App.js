@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { createTables } from './src/database.js'
 import PantryScreen from "./screens/PantryScreen";
 import { StatScreen } from "./screens/StatScreen.js";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
 
@@ -41,13 +42,17 @@ const App = () => {
     }, []);
 
     return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName="Home">
-                <Stack.Screen name="Home" component={HomeScreen} />
-                <Stack.Screen name="Stats" component={StatScreen} />
-                <Stack.Screen name="Pantry" component={PantryScreen} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <SafeAreaProvider>
+            <SafeAreaView style={{ flex: 1 }}>
+                <NavigationContainer>
+                    <Stack.Navigator initialRouteName="Home">
+                        <Stack.Screen name="Home" component={HomeScreen} />
+                        <Stack.Screen name="Stats" component={StatScreen} />
+                        <Stack.Screen name="Pantry" component={PantryScreen} />
+                    </Stack.Navigator>
+                </NavigationContainer>
+            </SafeAreaView>
+        </SafeAreaProvider>
     )
 }
 

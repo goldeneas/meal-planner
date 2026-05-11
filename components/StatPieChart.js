@@ -1,19 +1,20 @@
-import { View, StyleSheet, Text } from "react-native"
-import PieChart from "react-native-pie-chart"
+import { View, StyleSheet, Text } from "react-native";
+import { PieChart } from "react-native-gifted-charts";
 
 const styles = StyleSheet.create({
     container: {
-        alignItems: 'center',
         backgroundColor: '#F0FAF4',
-        borderRadius: 20,
         borderWidth: 1,
+        borderRadius: 20,
         borderColor: '#C6E8D2',
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
         padding: 20,
         shadowColor: '#2D7A4F',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
         elevation: 3,
+        alignItems: 'center',
+        width: '100%'
     },
     title: {
         fontSize: 13,
@@ -49,30 +50,28 @@ const styles = StyleSheet.create({
 
 const colors = ['#1F5C3A', '#2D7A4F', '#52A876', '#A8D9BC'];
 
-/*
-    const series = [
-        { value: 430, label: 'Pomodoro' },
-        { value: 321, label: 'Cipolla rossa di Tropea' },
-        { value: 185, label: 'Tartufo nero' },
-        { value: 123, label: 'Cipolla ramata di Montoro' },
-    ]
-*/
-
-const StatPieChart = ({ widthAndHeight, series, title }) => {
-    const coloredSeries = series.map((s, i) => ({
-        ...s,
+const StatPieChart = ({ series }) => {
+    const data = series.map((s, i) => ({
+        value: s.value,
         color: colors[i % colors.length],
+        label: s.label,
     }));
+
+    const radius = 125;
 
     return (
         <View style={styles.container}>
-            {title && <Text style={styles.title}>{title}</Text>}
-            <PieChart cover={0.45} series={coloredSeries} widthAndHeight={widthAndHeight} />
+            <PieChart
+                data={data}
+                radius={radius}
+                innerRadius={radius * 0.45} // 45%
+                centerLabelComponent={() => null}
+            />
             <View style={styles.legend}>
-                {coloredSeries.map((s, i) => (
+                {data.map((s, i) => (
                     <View key={i} style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: s.color }]} />
-                        <Text style={styles.legendLabel}>{s.label ?? `Serie ${i + 1}`}</Text>
+                        <Text style={styles.legendLabel}>{s.label ?? `default`}</Text>
                     </View>
                 ))}
             </View>

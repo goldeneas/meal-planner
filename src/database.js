@@ -89,6 +89,7 @@ export async function createTables(db) {
         id INTEGER PRIMARY KEY,\
         expirationDate TEXT,\
         quantity REAL NOT NULL,\
+        warningQuantity REAL,\
         unitOfMeasure INTEGER NOT NULL,\
         food INTEGER NOT NULL,\
         \

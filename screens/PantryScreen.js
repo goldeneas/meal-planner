@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // TODO: wait for DB functions and then uncoment this and remove mock data in fetchPantryItems
 
@@ -7,6 +8,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, B
 const PantryScreen = () => {
     const [pantryItems, setPantryItems] = useState([]);
     const [editingItem, setEditingItem] = useState(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     useEffect(() => {
         fetchPantryItems();
@@ -55,9 +57,36 @@ const PantryScreen = () => {
         setEditingItem({ ...item });
     };
 
+    const handleAddClick = () => {
+        setEditingItem({
+            name: '',
+            category: '',
+            quantity: '',
+            warningQuantity: '',
+            unitOfMeasure: '',
+            expirationDate: '',
+            note: ''
+        });
+    };
+
     const saveEdit = () => {
         if (!editingItem.name || !editingItem.category || !editingItem.unitOfMeasure || editingItem.quantity === '' || editingItem.quantity == null) {
             Alert.alert("Errore", "I campi Nome, Categoria, Quantità e Unità di misura sono obbligatori.");
+            return;
+        }
+
+        if (isNaN(editingItem.quantity)) {
+            Alert.alert("Errore", "La quantità deve essere un numero valido.");
+            return;
+        }
+
+        if (editingItem.warningQuantity && isNaN(editingItem.warningQuantity)) {
+            Alert.alert("Errore", "La soglia di avviso deve essere un numero valido.");
+            return;
+        }
+
+        if (editingItem.expirationDate && !/^\d{4}-\d{2}-\d{2}$/.test(editingItem.expirationDate)) {
+            Alert.alert("Errore", "La data di scadenza deve essere nel formato YYYY-MM-DD.");
             return;
         }
 
@@ -67,8 +96,26 @@ const PantryScreen = () => {
             quantity: parseFloat(editingItem.quantity) || 0,
             warningQuantity: editingItem.warningQuantity ? parseFloat(editingItem.warningQuantity) : null
         };
-        setPantryItems((prevItems) => prevItems.map((item) => item.id === updatedItem.id ? updatedItem : item));
+
+        if (updatedItem.id) {
+            setPantryItems((prevItems) => prevItems.map((item) => item.id === updatedItem.id ? updatedItem : item));
+        } else {
+            updatedItem.id = Date.now(); // Genera un ID temporaneo per i nuovi elementi inseriti localmente
+            setPantryItems((prevItems) => [...prevItems, updatedItem]);
+        }
+        
         setEditingItem(null);
+    };
+
+    const onDateChange = (event, selectedDate) => {
+        setShowDatePicker(false);
+        if (selectedDate) {
+            const year = selectedDate.getFullYear();
+            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(selectedDate.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            setEditingItem({ ...editingItem, expirationDate: formattedDate });
+        }
     };
 
     const removePantryItem = (id) => {
@@ -122,10 +169,15 @@ const PantryScreen = () => {
                 ListEmptyComponent={<Text style={styles.emptyText}>La dispensa è vuota.</Text>}
             />
 
+            <TouchableOpacity style={styles.fab} onPress={handleAddClick}>
+                <Text style={styles.fabIcon}>+</Text>
+            </TouchableOpacity>
+
+
             <Modal visible={!!editingItem} animationType="slide" transparent={true}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Modifica Prodotto</Text>
+                        <Text style={styles.modalTitle}>{editingItem?.id ? 'Modifica Prodotto' : 'Nuovo Prodotto'}</Text>
                         {editingItem && (
                             <ScrollView>
                                 <Text style={styles.label}>Nome</Text>
@@ -135,6 +187,7 @@ const PantryScreen = () => {
                                     onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
                                 />
                                 <Text style={styles.label}>Categoria</Text>
+                                {/* TODO: Sostituire con un Picker che ottiene le categorie (FoodCategory) dal DB */}
                                 <TextInput
                                     style={styles.input}
                                     value={editingItem.category}
@@ -155,17 +208,31 @@ const PantryScreen = () => {
                                     onChangeText={(text) => setEditingItem({ ...editingItem, warningQuantity: text })}
                                 />
                                 <Text style={styles.label}>Unità di misura</Text>
+                                {/* TODO: Sostituire con un Picker che ottiene le unità di misura (UnitOfMeasure) dal DB */}
                                 <TextInput
                                     style={styles.input}
                                     value={editingItem.unitOfMeasure}
                                     onChangeText={(text) => setEditingItem({ ...editingItem, unitOfMeasure: text })}
                                 />
-                                <Text style={styles.label}>Scadenza (YYYY-MM-DD)</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingItem.expirationDate || ''}
-                                    onChangeText={(text) => setEditingItem({ ...editingItem, expirationDate: text })}
-                                />
+                                <Text style={styles.label}>Scadenza</Text>
+                                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                    <View pointerEvents="none">
+                                        <TextInput
+                                            style={styles.input}
+                                            value={editingItem.expirationDate || ''}
+                                            placeholder="YYYY-MM-DD"
+                                            editable={false}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                                {showDatePicker && (
+                                    <DateTimePicker
+                                        value={editingItem.expirationDate ? new Date(editingItem.expirationDate) : new Date()}
+                                        mode="date"
+                                        display="default"
+                                        onChange={onDateChange}
+                                    />
+                                )}
                                 <Text style={styles.label}>Note</Text>
                                 <TextInput
                                     style={styles.input}
@@ -301,7 +368,24 @@ const styles = StyleSheet.create({
     buttonWrapper: {
         flex: 1,
         marginHorizontal: 8,
-    }
+    },
+    fab: {
+        position: 'absolute',
+        width: 60,
+        height: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
+        right: 20,
+        bottom: 40,
+        backgroundColor: '#28a745',
+        borderRadius: 30,
+        elevation: 5,
+    },
+    fabIcon: {
+        fontSize: 30,
+        color: 'white',
+        fontWeight: 'bold',
+    },
 });
 
 export default PantryScreen;

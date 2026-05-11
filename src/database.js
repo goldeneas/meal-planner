@@ -55,6 +55,7 @@ export async function createTables(db) {
 
     await db.executeSql("CREATE TABLE Food(\
         id INTEGER PRIMARY KEY,\
+        name TEXT,\
         description TEXT,\
         category INTEGER NOT NULL,\
         \

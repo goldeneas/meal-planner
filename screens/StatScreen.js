@@ -38,18 +38,18 @@ export const StatScreen = ({ navigation }) => {
         <ScrollView>
             <View style={styles.grid}>
                 <StatTextHeader text={"Panoramica"} />
-                {['Pasti Pianificati',
-                    'Ingredienti Comprati',
-                    'Ricette in Archivio',
+                {['Ricette Salvate',
+                    'Pasti Pianificati',
                     'Prodotti in Scadenza',
+                    'Prodotti Scaduti',
                     'Prodotti Mancanti',
-                    'Tempo Medio di Preparazione']
+                    '  Tempo Medio \ndi Preparazione']
                     .map((label, index) => (
                         <StatCounter key={index} counter={index} label={label} />
                     ))}
                 <StatTextHeader text={"Ingredienti Più Usati"} />
                 <StatBarChart series={series} />
-                <StatTextHeader text={"Categoria di Ricetta"} />
+                <StatTextHeader text={"Categorie di Pasti Frequenti"} />
                 <StatPieChart widthAndHeight={250} series={series} />
                 <StatTextHeader text={"Ricette per Categoria"} />
                 <StatPieChart widthAndHeight={250} series={series} />

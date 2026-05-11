@@ -45,7 +45,7 @@ const App = () => {
             <Stack.Navigator initialRouteName="Home">
                 <Stack.Screen name="Home" component={HomeScreen} />
                 <Stack.Screen name="Stats" component={StatScreen} />
-                <Stack.Screen name="Pantry" component={PantryScreen} />
+                <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: 'Dispensa' }} />
             </Stack.Navigator>
         </NavigationContainer>
     )

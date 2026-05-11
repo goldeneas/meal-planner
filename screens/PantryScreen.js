@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 
 // TODO: wait for DB functions and then uncoment this and remove mock data in fetchPantryItems
-// import SQLite from 'react-native-sqlite-storage';
 
-// const dbPromise = SQLite.openDatabase({ name: "database.db", location: 'default' });
 
 const PantryScreen = () => {
     const [pantryItems, setPantryItems] = useState([]);

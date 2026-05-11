@@ -20,6 +20,7 @@ const PantryScreen = () => {
                 name: "Spaghetti",
                 category: "Cereali",
                 quantity: 500,
+                warningQuantity: 100,
                 unitOfMeasure: "g",
                 expirationDate: "2027-12-31",
                 note: "Scadenza a lungo termine"
@@ -29,6 +30,7 @@ const PantryScreen = () => {
                 name: "Passata di pomodoro",
                 category: "Verdura e ortaggi",
                 quantity: 2,
+                warningQuantity: 1,
                 unitOfMeasure: "pz",
                 expirationDate: "2026-10-15",
                 note: "Fatte in casa, utilizzare prima per i sughi"
@@ -38,6 +40,7 @@ const PantryScreen = () => {
                 name: "Olio Extravergine d'Oliva",
                 category: "Condimenti",
                 quantity: 1,
+                warningQuantity: 0.5,
                 unitOfMeasure: "L",
                 expirationDate: null,
                 note: null
@@ -61,7 +64,8 @@ const PantryScreen = () => {
         // TODO: DB update function and then update state
         const updatedItem = {
             ...editingItem,
-            quantity: parseFloat(editingItem.quantity) || 0
+            quantity: parseFloat(editingItem.quantity) || 0,
+            warningQuantity: editingItem.warningQuantity ? parseFloat(editingItem.warningQuantity) : null
         };
         setPantryItems((prevItems) => prevItems.map((item) => item.id === updatedItem.id ? updatedItem : item));
         setEditingItem(null);
@@ -90,7 +94,12 @@ const PantryScreen = () => {
             </View>
             <View style={styles.detailsContainer}>
                 <View style={styles.details}>
-                    <Text style={styles.text}>Quantità: {item.quantity} {item.unitOfMeasure}</Text>
+                    <Text style={[styles.text, item.warningQuantity != null && item.quantity <= item.warningQuantity && styles.warningText]}>
+                        Quantità: {item.quantity} {item.unitOfMeasure} {item.warningQuantity != null && item.quantity <= item.warningQuantity ? '⚠️' : ''}
+                    </Text>
+                    {item.warningQuantity != null ? (
+                        <Text style={styles.text}>Soglia avviso: {item.warningQuantity} {item.unitOfMeasure}</Text>
+                    ) : null}
                     {item.expirationDate ? (
                         <Text style={styles.text}>Scadenza: {item.expirationDate}</Text>
                     ) : null}
@@ -137,6 +146,13 @@ const PantryScreen = () => {
                                     value={editingItem.quantity.toString()}
                                     keyboardType="numeric"
                                     onChangeText={(text) => setEditingItem({ ...editingItem, quantity: text })}
+                                />
+                                <Text style={styles.label}>Soglia di avviso</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={editingItem.warningQuantity != null ? editingItem.warningQuantity.toString() : ''}
+                                    keyboardType="numeric"
+                                    onChangeText={(text) => setEditingItem({ ...editingItem, warningQuantity: text })}
                                 />
                                 <Text style={styles.label}>Unità di misura</Text>
                                 <TextInput
@@ -240,6 +256,7 @@ const styles = StyleSheet.create({
     },
     details: { gap: 4, flex: 1 },
     text: { fontSize: 14, color: '#495057' },
+    warningText: { color: '#dc3545', fontWeight: 'bold' },
     note: { fontSize: 14, color: '#868e96', fontStyle: 'italic', marginTop: 4 },
     emptyText: { textAlign: 'center', color: '#868e96', marginTop: 20, fontSize: 16 },
     modalOverlay: {

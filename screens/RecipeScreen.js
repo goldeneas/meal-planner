@@ -6,6 +6,28 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, B
 const RecipeScreen = () => {
     const [recipes, setRecipes] = useState([]);
     const [editingRecipe, setEditingRecipe] = useState(null);
+    const [expandedId, setExpandedId] = useState(null);
+
+    // Stati per l'aggiunta di ingredienti
+    const [foodSearchQuery, setFoodSearchQuery] = useState('');
+    const [filteredFoods, setFilteredFoods] = useState([]);
+    const [selectedFood, setSelectedFood] = useState(null);
+    const [ingredientQty, setIngredientQty] = useState('');
+    const [ingredientUnit, setIngredientUnit] = useState('');
+
+    // TODO: DB - Sostituire con 'SELECT * FROM UnitOfMeasure'
+    const availableUnits = ['g', 'kg', 'ml', 'l', 'pz', 'spicchio', 'cucchiai', 'rametti'];
+
+    // TODO: DB - Questa lista servirà per l'autocompletamento tramite 'SELECT * FROM Food WHERE name LIKE ...'
+    const availableFoods = [
+        { id: 1, name: 'Pesto' }, { id: 2, name: 'Pennette' },
+        { id: 3, name: 'Pomodoro' }, { id: 4, name: 'Pollo' },
+        { id: 5, name: 'Patate' }, { id: 6, name: 'Aglio' },
+        { id: 7, name: "Olio Extravergine d'Oliva" },
+        { id: 8, name: 'Spaghetti' },
+        { id: 9, name: 'Passata di pomodoro' },
+        { id: 10, name: 'Rosmarino' },
+    ];
 
     useEffect(() => {
         fetchRecipes();
@@ -18,25 +40,91 @@ const RecipeScreen = () => {
                 name: "Spaghetti al Pomodoro",
                 preparationTimeMinutes: 20,
                 numberOfServings: 2,
-                description: "Una classica e semplice ricetta italiana, veloce e gustosa.",
-                difficulty: "Facile", // Mockato per display, in DB sarà un ID (FK a Difficulty)
-                category: "Primo" // Mockato per display, in DB sarà un ID (FK a RecipeCategory)
+                description: "Metti a bollire l'acqua in una pentola.\nAggiungi il sale e la pasta.\nPrepara il sugo di pomodoro a parte.\nScola la pasta e mescolala con il sugo.",
+                difficulty: "Facile",
+                category: "Primo",
+                ingredients: [
+                    { name: "Spaghetti", quantity: 200, unit: "g" },
+                    { name: "Passata di pomodoro", quantity: 300, unit: "ml" },
+                    { name: "Aglio", quantity: 1, unit: "spicchio" },
+                    { name: "Olio Extravergine d'Oliva", quantity: 2, unit: "cucchiai" }
+                ]
             },
             {
                 id: 2,
                 name: "Pollo al Forno con Patate",
                 preparationTimeMinutes: 60,
                 numberOfServings: 4,
-                description: "Pollo arrosto con patate croccanti aromatizzate al rosmarino.",
+                description: "Taglia le patate a cubetti.\nCondisci il pollo e le patate con olio e rosmarino.\nInforna a 200 gradi per 60 minuti.",
                 difficulty: "Medio",
-                category: "Secondo"
+                category: "Secondo",
+                ingredients: [
+                    { name: "Pollo", quantity: 1, unit: "kg" },
+                    { name: "Patate", quantity: 800, unit: "g" },
+                    { name: "Rosmarino", quantity: 2, unit: "rametti" },
+                    { name: "Olio Extravergine d'Oliva", quantity: 3, unit: "cucchiai" }
+                ]
             }
         ];
         setRecipes(mockRecipes);
     };
 
+    const handleFoodSearch = (text) => {
+        setFoodSearchQuery(text);
+        setSelectedFood(null); // Resetta il cibo selezionato se l'utente ricomincia a scrivere
+
+        if (text.trim().length > 0) {
+            // TODO: DB - Sostituire con 'SELECT * FROM Food WHERE name LIKE '%text%''
+            const filtered = availableFoods.filter(f => f.name.toLowerCase().includes(text.toLowerCase()));
+            setFilteredFoods(filtered);
+        } else {
+            setFilteredFoods([]);
+        }
+    };
+
+    const handleSelectFood = (food) => {
+        setSelectedFood(food);
+        setFoodSearchQuery(food.name);
+        setFilteredFoods([]);
+    };
+
+    const handleAddIngredient = () => {
+        if (!selectedFood || !ingredientQty || !ingredientUnit) {
+            Alert.alert("Errore", "Seleziona un cibo, inserisci la quantità e scegli un'unità di misura.");
+            return;
+        }
+        
+        const newIngredient = {
+            foodId: selectedFood.id,
+            name: selectedFood.name,
+            quantity: parseFloat(ingredientQty),
+            unit: ingredientUnit, // TODO: DB - Qua in futuro salverai l'ID riferito a UnitOfMeasure
+        };
+
+        setEditingRecipe({
+            ...editingRecipe,
+            ingredients: [...(editingRecipe.ingredients || []), newIngredient]
+        });
+
+        // Reset dei campi dell'ingrediente per aggiungerne un altro
+        setSelectedFood(null);
+        setFoodSearchQuery('');
+        setIngredientQty('');
+        setIngredientUnit('');
+    };
+
+    const handleRemoveIngredient = (index) => {
+        const updatedIngredients = [...(editingRecipe.ingredients || [])];
+        updatedIngredients.splice(index, 1);
+        setEditingRecipe({
+            ...editingRecipe,
+            ingredients: updatedIngredients
+        });
+    };
+
     const handleEditClick = (recipe) => {
         setEditingRecipe({ ...recipe });
+        resetIngredientForm();
     };
 
     const handleAddClick = () => {
@@ -46,8 +134,18 @@ const RecipeScreen = () => {
             numberOfServings: '',
             description: '',
             difficulty: '',
-            category: ''
+            category: '',
+            ingredients: []
         });
+        resetIngredientForm();
+    };
+
+    const resetIngredientForm = () => {
+        setSelectedFood(null);
+        setFoodSearchQuery('');
+        setIngredientQty('');
+        setIngredientUnit('');
+        setFilteredFoods([]);
     };
 
     const saveEdit = () => {
@@ -61,7 +159,7 @@ const RecipeScreen = () => {
             return;
         }
 
-        // TODO: DB update function and then update state
+        // TODO: DB - Sostituire con query 'INSERT/UPDATE INTO Recipe' ed 'INSERT INTO Ingredient'
         const updatedRecipe = {
             ...editingRecipe,
             preparationTimeMinutes: parseInt(editingRecipe.preparationTimeMinutes, 10),
@@ -83,34 +181,67 @@ const RecipeScreen = () => {
         setRecipes((prev) => prev.filter((item) => item.id !== id));
     };
 
-    const renderItem = ({ item }) => (
-        <View style={styles.card}>
-            <View style={styles.cardHeader}>
-                <View style={styles.headerLeft}>
-                    <Text style={styles.title}>{item.name}</Text>
-                    <Text style={styles.category}>{item.category}</Text>
-                </View>
-                <View style={styles.badgeAndAction}>
-                    <TouchableOpacity style={styles.deleteButton} onPress={() => removeRecipe(item.id)}>
-                        <Text style={styles.actionIcon}>🗑</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.editButton} onPress={() => handleEditClick(item)}>
-                        <Text style={styles.actionIcon}>✏️</Text>
-                    </TouchableOpacity>
-                </View>
+    const toggleExpand = (id) => {
+        setExpandedId((prevId) => (prevId === id ? null : id));
+    };
+
+    const renderItem = ({ item }) => {
+        const isExpanded = expandedId === item.id;
+
+        return (
+            <View style={styles.card}>
+                <TouchableOpacity onPress={() => toggleExpand(item.id)} style={styles.cardHeader} activeOpacity={0.7}>
+                    <View style={styles.headerLeft}>
+                        <Text style={styles.title}>{item.name}</Text>
+                        <Text style={styles.category}>{item.category}</Text>
+                    </View>
+                    <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
+                </TouchableOpacity>
+
+                {isExpanded && (
+                    <View style={styles.expandedContent}>
+                        <View style={styles.badgeAndAction}>
+                            <TouchableOpacity style={styles.deleteButton} onPress={() => removeRecipe(item.id)}>
+                                <Text style={styles.actionIcon}>🗑</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.editButton} onPress={() => handleEditClick(item)}>
+                                <Text style={styles.actionIcon}>✏️</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.detailsContainer}>
+                            <View style={styles.details}>
+                                <Text style={styles.text}>⏱ Tempo: {item.preparationTimeMinutes} min</Text>
+                                <Text style={styles.text}>🍽 Porzioni: {item.numberOfServings}</Text>
+                                <Text style={styles.text}>📈 Difficoltà: {item.difficulty}</Text>
+
+                                {item.ingredients && item.ingredients.length > 0 && (
+                                    <View style={styles.ingredientsContainer}>
+                                        <Text style={styles.ingredientsTitle}>Ingredienti:</Text>
+                                        {item.ingredients.map((ing, idx) => (
+                                            <Text key={idx} style={styles.ingredientText}>
+                                                • {ing.quantity} {ing.unit} {ing.name}
+                                            </Text>
+                                        ))}
+                                    </View>
+                                )}
+
+                                {item.description ? (
+                                    <View style={styles.procedureContainer}>
+                                        <Text style={styles.procedureTitle}>Procedimento:</Text>
+                                        {item.description.split('\n').filter(step => step.trim() !== '').map((step, idx) => (
+                                            <Text key={idx} style={styles.procedureStep}>
+                                                {idx + 1}. {step.trim()}
+                                            </Text>
+                                        ))}
+                                    </View>
+                                ) : null}
+                            </View>
+                        </View>
+                    </View>
+                )}
             </View>
-            <View style={styles.detailsContainer}>
-                <View style={styles.details}>
-                    <Text style={styles.text}>⏱ Tempo: {item.preparationTimeMinutes} min</Text>
-                    <Text style={styles.text}>🍽 Porzioni: {item.numberOfServings}</Text>
-                    <Text style={styles.text}>📈 Difficoltà: {item.difficulty}</Text>
-                    {item.description ? (
-                        <Text style={styles.description}>Descrizione: {item.description}</Text>
-                    ) : null}
-                </View>
-            </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -172,7 +303,66 @@ const RecipeScreen = () => {
                                     onChangeText={(text) => setEditingRecipe({ ...editingRecipe, numberOfServings: text })}
                                 />
                                 
-                                <Text style={styles.label}>Descrizione/Istruzioni</Text>
+                                <Text style={styles.sectionTitle}>Ingredienti</Text>
+
+                                {/* Lista degli ingredienti già aggiunti */}
+                                {editingRecipe.ingredients && editingRecipe.ingredients.length > 0 && (
+                                    <View style={styles.addedIngredientsList}>
+                                        {editingRecipe.ingredients.map((ing, idx) => (
+                                            <View key={idx} style={styles.addedIngredientRow}>
+                                                <Text style={styles.addedIngredientText}>
+                                                    • {ing.quantity} {ing.unit} {ing.name}
+                                                </Text>
+                                                <TouchableOpacity onPress={() => handleRemoveIngredient(idx)}>
+                                                    <Text style={styles.removeIngredientText}>✕</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        ))}
+                                    </View>
+                                )}
+
+                                {/* Form di ricerca e aggiunta nuovo Ingrediente */}
+                                <View style={styles.addIngredientContainer}>
+                                    <Text style={styles.label}>Cerca Cibo (Autocompletamento)</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={foodSearchQuery}
+                                        onChangeText={handleFoodSearch}
+                                        placeholder="Es. penne, pomodoro..."
+                                    />
+                                    
+                                    {filteredFoods.length > 0 && !selectedFood && (
+                                        <View style={styles.autocompleteContainer}>
+                                            {filteredFoods.map(food => (
+                                                <TouchableOpacity key={food.id} style={styles.autocompleteItem} onPress={() => handleSelectFood(food)}>
+                                                    <Text style={styles.autocompleteText}>{food.name}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    )}
+
+                                    {selectedFood && (
+                                        <View style={styles.ingredientDetailsContainer}>
+                                            <Text style={styles.label}>Quantità</Text>
+                                            <TextInput style={styles.input} value={ingredientQty} onChangeText={setIngredientQty} keyboardType="numeric" placeholder="Es. 100" />
+                                            
+                                            <Text style={styles.label}>Unità di misura</Text>
+                                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.unitSelector}>
+                                                {availableUnits.map(u => (
+                                                    <TouchableOpacity key={u} style={[styles.unitBtn, ingredientUnit === u && styles.unitBtnActive]} onPress={() => setIngredientUnit(u)}>
+                                                        <Text style={[styles.unitBtnText, ingredientUnit === u && styles.unitBtnTextActive]}>{u}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                            
+                                            <View style={{ marginTop: 8 }}>
+                                                <Button title="Aggiungi Ingrediente" onPress={handleAddIngredient} color="#28a745" />
+                                            </View>
+                                        </View>
+                                    )}
+                                </View>
+
+                                <Text style={styles.label}>Procedimento (uno step per riga)</Text>
                                 <TextInput
                                     style={[styles.input, styles.textArea]}
                                     value={editingRecipe.description}
@@ -226,8 +416,7 @@ const styles = StyleSheet.create({
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
+        alignItems: 'center',
     },
     headerLeft: {
         flex: 1,
@@ -236,7 +425,9 @@ const styles = StyleSheet.create({
     badgeAndAction: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'flex-end',
         gap: 8,
+        marginBottom: 8,
     },
     title: { fontSize: 20, fontWeight: 'bold', color: '#1b5e20', marginBottom: 4 },
     category: {
@@ -249,7 +440,47 @@ const styles = StyleSheet.create({
     detailsContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
     details: { gap: 4, flex: 1 },
     text: { fontSize: 14, color: '#495057' },
-    description: { fontSize: 14, color: '#868e96', fontStyle: 'italic', marginTop: 8 },
+    procedureContainer: {
+        marginTop: 12,
+    },
+    procedureTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#2e7d32',
+        marginBottom: 4,
+    },
+    procedureStep: {
+        fontSize: 14,
+        color: '#495057',
+        marginBottom: 4,
+    },
+    expandedContent: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#c8e6c9',
+    },
+    expandIcon: {
+        color: '#1b5e20',
+        fontSize: 24,
+        marginLeft: 8,
+    },
+    ingredientsContainer: {
+        marginTop: 12,
+        marginBottom: 4,
+    },
+    ingredientsTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#2e7d32',
+        marginBottom: 4,
+    },
+    ingredientText: {
+        fontSize: 14,
+        color: '#495057',
+        marginLeft: 8,
+        marginBottom: 2,
+    },
     emptyText: { textAlign: 'center', color: '#868e96', marginTop: 20, fontSize: 16 },
     modalOverlay: {
         flex: 1,
@@ -283,6 +514,36 @@ const styles = StyleSheet.create({
         right: 20, bottom: 40, backgroundColor: '#28a745', borderRadius: 30, elevation: 5,
     },
     fabIcon: { fontSize: 30, color: 'white', fontWeight: 'bold' },
+    sectionTitle: {
+        fontSize: 18, fontWeight: 'bold', color: '#1b5e20',
+        marginTop: 16, marginBottom: 8,
+    },
+    addedIngredientsList: { marginBottom: 12 },
+    addedIngredientRow: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: '#c8e6c9',
+    },
+    addedIngredientText: { fontSize: 14, color: '#495057', flex: 1 },
+    removeIngredientText: { color: '#dc3545', fontSize: 18, fontWeight: 'bold', paddingHorizontal: 8 },
+    addIngredientContainer: {
+        backgroundColor: '#f1f8f1', padding: 12, borderRadius: 8,
+        marginBottom: 16, borderWidth: 1, borderColor: '#c8e6c9',
+    },
+    autocompleteContainer: {
+        backgroundColor: 'white', borderWidth: 1, borderColor: '#c8e6c9',
+        borderRadius: 8, maxHeight: 150, marginBottom: 12,
+    },
+    autocompleteItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#f1f8f1' },
+    autocompleteText: { fontSize: 14, color: '#2e7d32' },
+    ingredientDetailsContainer: { marginTop: 8 },
+    unitSelector: { flexDirection: 'row', marginBottom: 12 },
+    unitBtn: {
+        paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8,
+        borderWidth: 1, borderColor: '#c8e6c9', backgroundColor: '#fff', marginRight: 8,
+    },
+    unitBtnActive: { backgroundColor: '#28a745', borderColor: '#28a745' },
+    unitBtnText: { fontSize: 14, color: '#28a745' },
+    unitBtnTextActive: { color: '#fff', fontWeight: 'bold' },
 });
 
 export default RecipeScreen;

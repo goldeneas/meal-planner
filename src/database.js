@@ -1,5 +1,5 @@
 export async function createTables(db) {
-    await db.executeSql("CREATE TABLE Difficulty(\
+    await db.executeSql("CREATE TABLE RecipeDifficulty(\
         id INTEGER PRIMARY KEY,\
         description TEXT NOT NULL\
     )");
@@ -17,8 +17,9 @@ export async function createTables(db) {
         description TEXT NOT NULL,\
         difficulty INTEGER NOT NULL,\
         category INTEGER NOT NULL,\
+        note TEXT,\
         \
-        FOREIGN KEY (difficulty) REFERENCES Difficulty(id) ON DELETE RESTRICT,\
+        FOREIGN KEY (difficulty) REFERENCES RecipeDifficulty(id) ON DELETE RESTRICT,\
         FOREIGN KEY (category) REFERENCES RecipeCategory(id) ON DELETE RESTRICT\
     )");
 
@@ -81,6 +82,7 @@ export async function createTables(db) {
         food INTEGER NOT NULL,\
         purchaseDate TEXT,\
         unitOfMeasure INTEGER NOT NULL,\
+        purchased BOOLEAN DEFAULT FALSE,\
         \
         FOREIGN KEY (food) REFERENCES Food(id) ON DELETE RESTRICT,\
         FOREIGN KEY (unitOfMeasure) REFERENCES UnitOfMeasure(id) ON DELETE RESTRICT\
@@ -93,17 +95,10 @@ export async function createTables(db) {
         warningQuantity REAL,\
         unitOfMeasure INTEGER NOT NULL,\
         food INTEGER NOT NULL,\
+        note TEXT,\
         \
         FOREIGN KEY (unitOfMeasure) REFERENCES UnitOfMeasure(id) ON DELETE RESTRICT,\
         FOREIGN KEY (food) REFERENCES Food(id) ON DELETE RESTRICT\
-    )");
-
-    await db.executeSql("CREATE TABLE Note(\
-        id INTEGER PRIMARY KEY,\
-        description TEXT NOT NULL,\
-        pantryProduct INTEGER NOT NULL,\
-        \
-        FOREIGN KEY (pantryProduct) REFERENCES PantryProduct(id) ON DELETE CASCADE\
     )");
 }
 

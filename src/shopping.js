@@ -6,11 +6,11 @@ export async function getShoppingItems(db) {
 
 export async function insertShoppingItem(db, item) {
     await db.executeSql(`INSERT INTO ShoppingItem(name, quantity, food, purchaseDate, unitOfMeasure)
-        VALUES (${item.name}, ${item.quantity}, ${item.food}, ${item.purchaseDate}, ${item.unitOfMeasure})`)
+        VALUES ('${item.name}', ${item.quantity}, ${item.food}, '${item.purchaseDate}', ${item.unitOfMeasure})`)
 }
 
 export async function deleteShoppingItem(db, id) {
-    await db.executeSql("REMOVE FROM ShoppingItem WHERE id = " + id)
+    await db.executeSql("DELETE FROM ShoppingItem WHERE id = " + id)
 }
 
 export async function updateShoppingItemQuantity(db, id, quantity) {

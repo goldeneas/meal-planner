@@ -1,25 +1,25 @@
 import { queryAsArray, queryCount } from "./database"
 
 export async function countPlannedMeals(db) {
-    return await queryCount(db, "SELECT COUNT(*) FROM Meal")
+    return await queryCount(db, "SELECT COUNT(*) AS count FROM Meal")
 }
 
 export async function countSavedRecipes(db) {
-    return await queryCount(db, "SELECT COUNT(*) FROM Recipe")
+    return await queryCount(db, "SELECT COUNT(*) AS count FROM Recipe")
 }
 
 export async function countExpiringProducts(db) {
-    return await queryCount(db, "SELECT COUNT(*) FROM PantryProduct\
+    return await queryCount(db, "SELECT COUNT(*) AS count FROM PantryProduct\
 WHERE expirationDate BETWEEN datetime('now') AND datetime('now', '+3 days')")
 }
 
 export async function countExpiredProducts(db) {
-    return await queryCount(db, "SELECT COUNT(*) FROM PantryProduct\
+    return await queryCount(db, "SELECT COUNT(*) AS count FROM PantryProduct\
         WHERE expirationDate <= datetime('now', '+3 days')")
 }
 
 export async function countMissingFood(db) {
-    return await queryCount(db, "SELECT DISTINCT food FROM Ingredient AS I\
+    return await queryCount(db, "SELECT COUNT(DISTINCT food) AS count FROM Ingredient AS I\
     WHERE\
         (SELECT COALESCE(SUM(quantity), 0) FROM Ingredient WHERE unitOfMeasure = I.unitOfMeasure AND food = I.food)\
         <\
@@ -27,7 +27,7 @@ export async function countMissingFood(db) {
 }
 
 export async function countAvgRecipePrepTime(db) {
-    return await queryCount(db, "SELECT AVG(preparationTimeMinutes) FROM Recipe")
+    return await queryCount(db, "SELECT AVG(preparationTimeMinutes) AS count FROM Recipe")
 }
 
 export async function getMostUsedIngredients(db) {

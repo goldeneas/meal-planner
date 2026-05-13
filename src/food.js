@@ -14,8 +14,8 @@ export async function getFoods(db) {
 
 export async function updateFoodById(db, id, food) {
     await db.executeSql(`UPDATE Food SET
-        name = ${food.name}
-        description = ${food.description}
+        name = '${food.name}',
+        description = '${food.description}',
         category = ${food.category}
         WHERE id = ${id}`)
 }

@@ -15,12 +15,12 @@ export async function getIngredientUnitOfMeasureSymbolById(db, id) {
 }
 
 export async function updateIngredientById(db, id, ingredient) {
-    await db.executeSql(`UPDATE Ingredient SET\
-        quantity = ${ingredient.quantity}
-        recipe = ${ingredient.recipe}
-        unitOfMeasure = ${ingredient.unitOfMeasure}
+    await db.executeSql(`UPDATE Ingredient SET
+        quantity = ${ingredient.quantity},
+        recipe = ${ingredient.recipe},
+        unitOfMeasure = ${ingredient.unitOfMeasure},
         food = ${ingredient.food}
-        WHERE id = ` + id)
+        WHERE id = ${id}`)
 }
 
 export async function removeIngredientById(db, id) {

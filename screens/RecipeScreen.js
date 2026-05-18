@@ -3,10 +3,16 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, B
 
 // TODO: wait for DB functions and then uncomment this and remove mock data in fetchRecipes
 
-const RecipeScreen = () => {
+const RecipeScreen = ({ route }) => {
     const [recipes, setRecipes] = useState([]);
     const [editingRecipe, setEditingRecipe] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
+    useEffect(() => {
+        //Se arriviamo da PlanScreen con un ID, espande automaticamente quella card
+        if (route?.params?.openRecipeId) {
+            setExpandedId(route.params.openRecipeId);
+        }
+    }, [route?.params?.openRecipeId]);
 
     // Stati per l'aggiunta di ingredienti
     const [foodSearchQuery, setFoodSearchQuery] = useState('');

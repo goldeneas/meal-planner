@@ -8,6 +8,7 @@ import PantryScreen from "./screens/PantryScreen";
 import { StatScreen } from "./screens/StatScreen.js";
 import ShoppingScreen  from "./screens/ShoppingScreen.js";
 import RecipeScreen from "./screens/RecipeScreen.js";
+import PlanScreen from "./screens/PlanScreen.js";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
@@ -37,6 +38,10 @@ const HomeScreen = ({ navigation }) => {
                 title="Gestione Ricette"
                 onPress={() => navigation.navigate("Recipes")}
             />
+            <Button
+                title="Pianificazione Pasti"
+                onPress={() => navigation.navigate("Plan")}
+            />
         </View>
     )
 }
@@ -61,6 +66,7 @@ const App = () => {
                         <Stack.Screen name="Pantry" component={PantryScreen} />
                         <Stack.Screen name="Shopping" component={ShoppingScreen} />
                         <Stack.Screen name="Recipes" component={RecipeScreen} />
+                        <Stack.Screen name="Plan" component={PlanScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
             </SafeAreaView>

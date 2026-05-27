@@ -64,6 +64,7 @@ const App = () => {
 
         prepareDatabase();
     }, []);
+
     return (
         <SafeAreaProvider>
             <SafeAreaView style={{ flex: 1 }}>

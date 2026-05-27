@@ -15,7 +15,6 @@ const PantryScreen = () => {
     }, []);
 
     const fetchPantryItems = async () => {
-       
         const mockItems = [
             {
                 id: 1,
@@ -50,7 +49,6 @@ const PantryScreen = () => {
         ];
 
         setPantryItems(mockItems);
-
     };
 
     const handleEditClick = (item) => {
@@ -103,7 +101,7 @@ const PantryScreen = () => {
             updatedItem.id = Date.now(); // Genera un ID temporaneo per i nuovi elementi inseriti localmente
             setPantryItems((prevItems) => [...prevItems, updatedItem]);
         }
-        
+
         setEditingItem(null);
     };
 

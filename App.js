@@ -4,9 +4,10 @@ import { View, Text, Button } from "react-native";
 import SQLite from 'react-native-sqlite-storage';
 import { useEffect, useState } from 'react';
 import { createTables } from './src/database.js'
+import { insertDefaultValues } from './src/defaults.js'
 import PantryScreen from "./screens/PantryScreen";
 import { StatScreen } from "./screens/StatScreen.js";
-import ShoppingScreen  from "./screens/ShoppingScreen.js";
+import ShoppingScreen from "./screens/ShoppingScreen.js";
 import RecipeScreen from "./screens/RecipeScreen.js";
 import PlanScreen from "./screens/PlanScreen.js";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -53,12 +54,14 @@ const App = () => {
         async function prepareDB() {
             const database = await dbPromise;
             await createTables(database);
+            await insertDefaultValues(db);
+
             setDb(database);
         }
 
         prepareDB();
     }, []);
-    
+
     return (
         <SafeAreaProvider>
             <SafeAreaView style={{ flex: 1 }}>

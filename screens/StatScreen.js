@@ -49,16 +49,15 @@ export const StatScreen = ({ navigation, db }) => {
                 countExpiredProducts(db),
                 countMissingFood(db),
                 countAvgRecipePrepTime(db),
-                getUnitsOfMeasure(db)
             ]);
 
             setCounters([
-                { label: 'Ricette Salvate', value: savedRecipesCount },
-                { label: 'Pasti Pianificati', value: plannedMealsCount },
-                { label: 'Prodotti in Scadenza', value: expiringProductsCount },
-                { label: 'Prodotti Scaduti', value: expiredProductsCount },
-                { label: 'Prodotti Mancanti', value: missingFoodCount },
-                { label: 'Tempo Medio\ndi Preparazione', value: avgRecipePrepTimeMinutes },
+                { label: 'Ricette Salvate', value: savedRecipesCount.count },
+                { label: 'Pasti Pianificati', value: plannedMealsCount.count },
+                { label: 'Prodotti in Scadenza', value: expiringProductsCount.count },
+                { label: 'Prodotti Scaduti', value: expiredProductsCount.count },
+                { label: 'Prodotti Mancanti', value: missingFoodCount.count },
+                { label: 'Tempo Medio\ndi Preparazione', value: avgRecipePrepTimeMinutes.count },
             ]);
         }
 

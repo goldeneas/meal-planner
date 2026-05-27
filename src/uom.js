@@ -1,9 +1,9 @@
-import { queryAsArray } from "./database";
+import { queryAllAsync } from "./database";
 
 export async function getUnitsOfMeasure(db) {
-    return await queryAsArray(db, "SELECT * FROM UnitOfMeasure");
+    return await queryAllAsync(db, "SELECT * FROM UnitOfMeasure");
 }
 
 export async function getUnitOfMeasureSymbolById(db, id) {
-    return await queryAsArray(db, "SELECT symbol FROM UnitOfMeasure WHERE id = " + id)
+    return await queryFirstAsync(db, "SELECT symbol FROM UnitOfMeasure WHERE id = " + id)
 }

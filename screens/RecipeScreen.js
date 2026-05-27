@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-import { queryAsArray } from '../src/database';
+import { queryAllAsync } from '../src/database';
 import { getRecipeCategories, getRecipeDifficulties } from '../src/recipe';
 import { getUnitsOfMeasure } from '../src/uom';
 import { getFoods } from '../src/food';
@@ -56,14 +56,14 @@ const RecipeScreen = ({ route, db }) => {
     const fetchRecipes = async () => {
         if (!db) return;
         try {
-            const rawRecipes = await queryAsArray(db, `
+            const rawRecipes = await queryAllAsync(db, `
                 SELECT R.id, R.name, R.preparationTimeMinutes, R.numberOfServings, R.description, RC.description AS category, RD.description AS difficulty
                 FROM Recipe AS R
                 JOIN RecipeCategory AS RC ON R.category = RC.id
                 JOIN RecipeDifficulty AS RD ON R.difficulty = RD.id
             `);
 
-            const rawIngredients = await queryAsArray(db, `
+            const rawIngredients = await queryAllAsync(db, `
                 SELECT I.recipe AS recipeId, I.quantity, UOM.symbol AS unit, F.name, F.id AS foodId
                 FROM Ingredient AS I
                 JOIN UnitOfMeasure AS UOM ON I.unitOfMeasure = UOM.id
@@ -104,7 +104,7 @@ const RecipeScreen = ({ route, db }) => {
             Alert.alert("Errore", "Seleziona un cibo, inserisci la quantità e scegli un'unità di misura.");
             return;
         }
-        
+
         const newIngredient = {
             foodId: selectedFood.id,
             name: selectedFood.name,
@@ -179,14 +179,14 @@ const RecipeScreen = ({ route, db }) => {
                 let categoryId = categories.find(c => c.description.toLowerCase() === editingRecipe.category.trim().toLowerCase())?.id;
                 if (!categoryId) {
                     await db.executeSql(`INSERT INTO RecipeCategory (description) VALUES ('${editingRecipe.category.replace(/'/g, "''").trim()}')`);
-                    const res = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                    const res = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
                     categoryId = res[0].id;
                 }
 
                 let difficultyId = difficulties.find(d => d.description.toLowerCase() === editingRecipe.difficulty.trim().toLowerCase())?.id;
                 if (!difficultyId) {
                     await db.executeSql(`INSERT INTO RecipeDifficulty (description) VALUES ('${editingRecipe.difficulty.replace(/'/g, "''").trim()}')`);
-                    const res = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                    const res = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
                     difficultyId = res[0].id;
                 }
 
@@ -201,7 +201,7 @@ const RecipeScreen = ({ route, db }) => {
                     await db.executeSql(`DELETE FROM Ingredient WHERE recipe = ${recipeId}`);
                 } else {
                     await db.executeSql(`INSERT INTO Recipe (name, preparationTimeMinutes, numberOfServings, description, difficulty, category) VALUES ('${safeName}', ${prepTime}, ${servings}, '${safeDesc}', ${difficultyId}, ${categoryId})`);
-                    const res = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                    const res = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
                     recipeId = res[0].id;
                 }
 
@@ -210,7 +210,7 @@ const RecipeScreen = ({ route, db }) => {
                         let uomId = availableUnits.find(u => u.symbol === ing.unit)?.id;
                         if (!uomId) {
                             await db.executeSql(`INSERT INTO UnitOfMeasure (symbol) VALUES ('${ing.unit}')`);
-                            const resUom = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                            const resUom = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
                             uomId = resUom[0].id;
                         }
                         await db.executeSql(`INSERT INTO Ingredient (quantity, recipe, unitOfMeasure, food) VALUES (${ing.quantity}, ${recipeId}, ${uomId}, ${ing.foodId})`);
@@ -330,7 +330,7 @@ const RecipeScreen = ({ route, db }) => {
                                     value={editingRecipe.name}
                                     onChangeText={(text) => setEditingRecipe({ ...editingRecipe, name: text })}
                                 />
-                                
+
                                 <Text style={styles.label}>Categoria</Text>
                                 <View style={styles.pickerContainer}>
                                     <Picker
@@ -346,7 +346,7 @@ const RecipeScreen = ({ route, db }) => {
                                         ))}
                                     </Picker>
                                 </View>
-                                
+
                                 <Text style={styles.label}>Difficoltà</Text>
                                 <View style={styles.pickerContainer}>
                                     <Picker
@@ -362,7 +362,7 @@ const RecipeScreen = ({ route, db }) => {
                                         ))}
                                     </Picker>
                                 </View>
-                                
+
                                 <Text style={styles.label}>Tempo di Preparazione (minuti)</Text>
                                 <TextInput
                                     style={styles.input}
@@ -370,7 +370,7 @@ const RecipeScreen = ({ route, db }) => {
                                     keyboardType="numeric"
                                     onChangeText={(text) => setEditingRecipe({ ...editingRecipe, preparationTimeMinutes: text })}
                                 />
-                                
+
                                 <Text style={styles.label}>Numero di Porzioni</Text>
                                 <TextInput
                                     style={styles.input}
@@ -378,7 +378,7 @@ const RecipeScreen = ({ route, db }) => {
                                     keyboardType="numeric"
                                     onChangeText={(text) => setEditingRecipe({ ...editingRecipe, numberOfServings: text })}
                                 />
-                                
+
                                 <Text style={styles.sectionTitle}>Ingredienti</Text>
 
                                 {/* Lista degli ingredienti già aggiunti */}
@@ -406,7 +406,7 @@ const RecipeScreen = ({ route, db }) => {
                                         onChangeText={handleFoodSearch}
                                         placeholder="Es. penne, pomodoro..."
                                     />
-                                    
+
                                     {filteredFoods.length > 0 && !selectedFood && (
                                         <View style={styles.autocompleteContainer}>
                                             {filteredFoods.map(food => (
@@ -421,7 +421,7 @@ const RecipeScreen = ({ route, db }) => {
                                         <View style={styles.ingredientDetailsContainer}>
                                             <Text style={styles.label}>Quantità</Text>
                                             <TextInput style={styles.input} value={ingredientQty} onChangeText={setIngredientQty} keyboardType="numeric" placeholder="Es. 100" />
-                                            
+
                                             <Text style={styles.label}>Unità di misura</Text>
                                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.unitSelector}>
                                                 {availableUnits.map(u => (
@@ -430,7 +430,7 @@ const RecipeScreen = ({ route, db }) => {
                                                     </TouchableOpacity>
                                                 ))}
                                             </ScrollView>
-                                            
+
                                             <View style={{ marginTop: 8 }}>
                                                 <Button title="Aggiungi Ingrediente" onPress={handleAddIngredient} color="#28a745" />
                                             </View>
@@ -446,7 +446,7 @@ const RecipeScreen = ({ route, db }) => {
                                     numberOfLines={4}
                                     onChangeText={(text) => setEditingRecipe({ ...editingRecipe, description: text })}
                                 />
-                                
+
                                 <View style={styles.modalActions}>
                                     <View style={styles.buttonWrapper}>
                                         <Button title="Annulla" onPress={() => setEditingRecipe(null)} color="#dc3545" />

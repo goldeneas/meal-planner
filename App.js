@@ -1,9 +1,9 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { View, Text, Button } from "react-native";
 
-import SQLite from 'react-native-sqlite-storage';
+import * as SQLite from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { createTables } from './src/database.js'
+import { createTables, getDatabase } from './src/database.js'
 import { insertDefaultValues } from './src/defaults.js'
 import PantryScreen from "./screens/PantryScreen";
 import { StatScreen } from "./screens/StatScreen.js";
@@ -15,9 +15,6 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 const { createNativeStackNavigator } = require("@react-navigation/native-stack");
 
 const Stack = createNativeStackNavigator();
-
-SQLite.enablePromise(true);
-const dbPromise = SQLite.openDatabase({ name: "database.db", location: 'default' })
 
 const HomeScreen = ({ navigation }) => {
     return (
@@ -48,20 +45,25 @@ const HomeScreen = ({ navigation }) => {
 }
 
 const App = () => {
-    const [db, setDb] = useState(null);
+    const [db, setDatabase] = useState(null)
 
     useEffect(() => {
-        async function prepareDB() {
-            const database = await dbPromise;
-            await createTables(database);
-            await insertDefaultValues(db);
+        async function prepareDatabase() {
+            try {
+                const db = await SQLite.openDatabaseAsync("database.db");
 
-            setDb(database);
+                await createTables(db);
+                await insertDefaultValues(db);
+
+                setDatabase(db);
+                console.log("[DB] caricato")
+            } catch (error) {
+                console.error("[DB] errore nel caricamento:", error);
+            }
         }
 
-        prepareDB();
+        prepareDatabase();
     }, []);
-
     return (
         <SafeAreaProvider>
             <SafeAreaView style={{ flex: 1 }}>

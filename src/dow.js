@@ -1,5 +1,5 @@
-import { queryAsArray } from "./database";
+import { queryAllAsync as queryAllAsync } from "./database";
 
 export async function getDaysOfWeek(db) {
-    return await queryAsArray(db, "SELECT * FROM DayOfWeek")
+    return await queryAllAsync(db, "SELECT * FROM DayOfWeek")
 }

@@ -1,10 +1,11 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Text } from "react-native";
 import StatTextHeader from "../components/StatTextHeader";
 import StatCounter from "../components/StatCounter";
 import StatPieChart from "../components/StatPieChart";
 import StatBarChart from "../components/StatBarChart";
-import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes, getMostMealByCategory, getMostUsedIngredients, mostMealByCategory, mostRecipesByCategory, mostUsedIngredients } from "../src/stats";
+import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes } from "../src/stats";
 import { useState, useEffect } from "react";
+import { getUnitsOfMeasure } from "../src/uom";
 
 const styles = StyleSheet.create({
     grid: {
@@ -48,6 +49,7 @@ export const StatScreen = ({ navigation, db }) => {
                 countExpiredProducts(db),
                 countMissingFood(db),
                 countAvgRecipePrepTime(db),
+                getUnitsOfMeasure(db)
             ]);
 
             setCounters([

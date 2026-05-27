@@ -1,71 +1,51 @@
 export async function insertDefaultValues(db) {
     try {
-        // Funzione helper per inserire solo se la tabella è vuota
-        const insertIfEmpty = async (table, values) => {
-            const results = await db.executeSql(`SELECT COUNT(*) as count FROM ${table}`);
-            if (results[0].rows.item(0).count === 0) {
-                for (const sql of values) {
-                    await db.executeSql(sql);
-                }
-                console.log(`[DB] Inseriti valori di default per ${table}`);
-            }
-        };
+        await db.execAsync(`
+            INSERT OR REPLACE INTO UnitOfMeasure (id, symbol) VALUES 
+            (1, 'g'), 
+            (2, 'ml');
 
-        // Unità di Misura
-        await insertIfEmpty('UnitOfMeasure', [
-            "INSERT INTO UnitOfMeasure (id, symbol) VALUES (1, 'g')",
-            "INSERT INTO UnitOfMeasure (id, symbol) VALUES (2, 'ml')",
-        ]);
+            INSERT OR REPLACE INTO DayOfWeek (id, name) VALUES 
+            (1, 'Lunedì'),
+            (2, 'Martedì'),
+            (3, 'Mercoledì'),
+            (4, 'Giovedì'),
+            (5, 'Venerdì'),
+            (6, 'Sabato'),
+            (7, 'Domenica');
 
-        // Giorni della Settimana
-        await insertIfEmpty('DayOfWeek', [
-            "INSERT INTO DayOfWeek (id, name) VALUES (1, 'Lunedì')",
-            "INSERT INTO DayOfWeek (id, name) VALUES (2, 'Martedì')",
-            "INSERT INTO DayOfWeek (id, name) VALUES (3, 'Mercoledì')",
-            "INSERT INTO DayOfWeek (id, name) VALUES (4, 'Giovedì')",
-            "INSERT INTO DayOfWeek (id, name) VALUES (5, 'Venerdì')",
-            "INSERT INTO DayOfWeek (id, name) VALUES (6, 'Sabato')",
-            "INSERT INTO DayOfWeek (id, name) VALUES (7, 'Domenica')"
-        ]);
+            INSERT OR REPLACE INTO TimeSlot (id, name) VALUES 
+            (1, 'Colazione'),
+            (2, 'Merenda'),
+            (3, 'Pranzo'),
+            (4, 'Spuntino'),
+            (5, 'Cena');
 
-        // Fasce Orarie / Pasti
-        await insertIfEmpty('TimeSlot', [
-            "INSERT INTO TimeSlot (id, name) VALUES (1, 'Colazione')",
-            "INSERT INTO TimeSlot (id, name) VALUES (2, 'Merenda')",
-            "INSERT INTO TimeSlot (id, name) VALUES (3, 'Pranzo')",
-            "INSERT INTO TimeSlot (id, name) VALUES (4, 'Spuntino')",
-            "INSERT INTO TimeSlot (id, name) VALUES (5, 'Cena')",
-        ]);
+            INSERT OR REPLACE INTO RecipeDifficulty (id, description) VALUES 
+            (1, 'Facile'),
+            (2, 'Media'),
+            (3, 'Difficile');
 
-        // Difficoltà Ricetta
-        await insertIfEmpty('RecipeDifficulty', [
-            "INSERT INTO RecipeDifficulty (id, description) VALUES (1, 'Facile')",
-            "INSERT INTO RecipeDifficulty (id, description) VALUES (2, 'Media')",
-            "INSERT INTO RecipeDifficulty (id, description) VALUES (3, 'Difficile')"
-        ]);
+            INSERT OR REPLACE INTO RecipeCategory (id, description) VALUES 
+            (1, 'Primo Piatto'),
+            (2, 'Secondo Piatto'),
+            (3, 'Contorno'),
+            (4, 'Dolce'),
+            (5, 'Antipasto');
 
-        // Categorie Ricetta
-        await insertIfEmpty('RecipeCategory', [
-            "INSERT INTO RecipeCategory (id, description) VALUES (1, 'Primo Piatto')",
-            "INSERT INTO RecipeCategory (id, description) VALUES (2, 'Secondo Piatto')",
-            "INSERT INTO RecipeCategory (id, description) VALUES (3, 'Contorno')",
-            "INSERT INTO RecipeCategory (id, description) VALUES (4, 'Dolce')",
-            "INSERT INTO RecipeCategory (id, description) VALUES (5, 'Antipasto')"
-        ]);
+            INSERT OR REPLACE INTO FoodCategory (id, description) VALUES 
+            (1, 'Verdura'),
+            (2, 'Frutta'),
+            (3, 'Carne'),
+            (4, 'Pesce'),
+            (5, 'Latticini'),
+            (6, 'Cereali'),
+            (7, 'Spezie'),
+            (8, 'Altro');
+        `);
 
-        // Categorie Cibo
-        await insertIfEmpty('FoodCategory', [
-            "INSERT INTO FoodCategory (id, description) VALUES (1, 'Verdura')",
-            "INSERT INTO FoodCategory (id, description) VALUES (2, 'Frutta')",
-            "INSERT INTO FoodCategory (id, description) VALUES (3, 'Carne')",
-            "INSERT INTO FoodCategory (id, description) VALUES (4, 'Pesce')",
-            "INSERT INTO FoodCategory (id, description) VALUES (5, 'Latticini')",
-            "INSERT INTO FoodCategory (id, description) VALUES (6, 'Cereali')",
-            "INSERT INTO FoodCategory (id, description) VALUES (7, 'Spezie')",
-            "INSERT INTO FoodCategory (id, description) VALUES (8, 'Altro')"
-        ]);
-
+        console.log("[DB] default inseriti");
     } catch (error) {
-        console.error("[DB] Erore durante l'inserimento dei default:", error);
+        console.error("[DB] errore default:", error);
     }
 }

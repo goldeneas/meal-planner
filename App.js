@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { View, Text, Button } from "react-native";
 
 import SQLite from 'react-native-sqlite-storage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createTables } from './src/database.js'
 import PantryScreen from "./screens/PantryScreen";
 import { StatScreen } from "./screens/StatScreen.js";
@@ -47,10 +47,13 @@ const HomeScreen = ({ navigation }) => {
 }
 
 const App = () => {
+    const [db, setDb] = useState(null);
+
     useEffect(() => {
         async function prepareDB() {
-            const db = await dbPromise;
-            await createTables(db);
+            const database = await dbPromise;
+            await createTables(database);
+            setDb(database);
         }
 
         prepareDB();
@@ -62,11 +65,11 @@ const App = () => {
                 <NavigationContainer>
                     <Stack.Navigator initialRouteName="Home">
                         <Stack.Screen name="Home" component={HomeScreen} />
-                        <Stack.Screen name="Stats" component={StatScreen} />
-                        <Stack.Screen name="Pantry" component={PantryScreen} />
-                        <Stack.Screen name="Shopping" component={ShoppingScreen} />
-                        <Stack.Screen name="Recipes" component={RecipeScreen} />
-                        <Stack.Screen name="Plan" component={PlanScreen} />
+                        <Stack.Screen name="Stats">{props => <StatScreen {...props} db={db} />}</Stack.Screen>
+                        <Stack.Screen name="Pantry">{props => <PantryScreen {...props} db={db} />}</Stack.Screen>
+                        <Stack.Screen name="Shopping">{props => <ShoppingScreen {...props} db={db} />}</Stack.Screen>
+                        <Stack.Screen name="Recipes">{props => <RecipeScreen {...props} db={db} />}</Stack.Screen>
+                        <Stack.Screen name="Plan">{props => <PlanScreen {...props} db={db} />}</Stack.Screen>
                     </Stack.Navigator>
                 </NavigationContainer>
             </SafeAreaView>

@@ -1,15 +1,15 @@
 export async function createTables(db) {
-    await db.executeSql("CREATE TABLE RecipeDifficulty(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS RecipeDifficulty(\
         id INTEGER PRIMARY KEY,\
         description TEXT NOT NULL\
     )");
 
-    await db.executeSql("CREATE TABLE RecipeCategory(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS RecipeCategory(\
         id INTEGER PRIMARY KEY,\
         description TEXT NOT NULL\
     )");
 
-    await db.executeSql("CREATE TABLE Recipe(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS Recipe(\
         id INTEGER PRIMARY KEY,\
         name TEXT NOT NULL,\
         preparationTimeMinutes INTEGER NOT NULL,\
@@ -23,17 +23,17 @@ export async function createTables(db) {
         FOREIGN KEY (category) REFERENCES RecipeCategory(id) ON DELETE RESTRICT\
     )");
 
-    await db.executeSql("CREATE TABLE DayOfWeek(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS DayOfWeek(\
         id INTEGER PRIMARY KEY,\
         name TEXT NOT NULL\
     )");
 
-    await db.executeSql("CREATE TABLE TimeSlot(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS TimeSlot(\
         id INTEGER PRIMARY KEY,\
         name TEXT NOT NULL\
     )");
 
-    await db.executeSql("CREATE TABLE Meal(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS Meal(\
         id INTEGER PRIMARY KEY,\
         recipe INTEGER NOT NULL,\
         dayOfWeek INTEGER NOT NULL,\
@@ -44,17 +44,17 @@ export async function createTables(db) {
         FOREIGN KEY (timeSlot) REFERENCES TimeSlot(id) ON DELETE RESTRICT\
     )");
 
-    await db.executeSql("CREATE TABLE UnitOfMeasure(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS UnitOfMeasure(\
         id INTEGER PRIMARY KEY,\
         symbol TEXT NOT NULL\
     )");
 
-    await db.executeSql("CREATE TABLE FoodCategory(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS FoodCategory(\
         id INTEGER PRIMARY KEY,\
         description TEXT NOT NULL\
     )");
 
-    await db.executeSql("CREATE TABLE Food(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS Food(\
         id INTEGER PRIMARY KEY,\
         name TEXT,\
         description TEXT,\
@@ -63,7 +63,7 @@ export async function createTables(db) {
         FOREIGN KEY (category) REFERENCES FoodCategory(id) ON DELETE RESTRICT\
     )");
 
-    await db.executeSql("CREATE TABLE Ingredient(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS Ingredient(\
         id INTEGER PRIMARY KEY,\
         quantity REAL NOT NULL,\
         recipe INTEGER NOT NULL,\
@@ -75,7 +75,7 @@ export async function createTables(db) {
         FOREIGN KEY (recipe) REFERENCES Recipe(id) ON DELETE CASCADE\
     )");
 
-    await db.executeSql("CREATE TABLE ShoppingItem(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS ShoppingItem(\
         id INTEGER PRIMARY KEY,\
         name TEXT NOT NULL,\
         quantity REAL NOT NULL,\
@@ -88,7 +88,7 @@ export async function createTables(db) {
         FOREIGN KEY (unitOfMeasure) REFERENCES UnitOfMeasure(id) ON DELETE RESTRICT\
     )");
 
-    await db.executeSql("CREATE TABLE PantryProduct(\
+    await db.executeSql("CREATE TABLE IF NOT EXISTS PantryProduct(\
         id INTEGER PRIMARY KEY,\
         expirationDate TEXT,\
         quantity REAL NOT NULL,\

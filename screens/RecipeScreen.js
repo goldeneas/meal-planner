@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 
-// TODO: wait for DB functions and then uncomment this and remove mock data in fetchRecipes
+import { queryAsArray } from '../src/database';
+import { getRecipeCategories, getRecipeDifficulties } from '../src/recipe';
+import { getUnitsOfMeasure } from '../src/uom';
+import { getFoods } from '../src/food';
 
-const RecipeScreen = ({ route }) => {
+
+const RecipeScreen = ({ route, db }) => {
     const [recipes, setRecipes] = useState([]);
     const [editingRecipe, setEditingRecipe] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
@@ -21,66 +26,66 @@ const RecipeScreen = ({ route }) => {
     const [ingredientQty, setIngredientQty] = useState('');
     const [ingredientUnit, setIngredientUnit] = useState('');
 
-    // TODO: DB - Sostituire con 'SELECT * FROM UnitOfMeasure'
-    const availableUnits = ['g', 'kg', 'ml', 'l', 'pz', 'spicchio', 'cucchiai', 'rametti'];
-
-    // TODO: DB - Questa lista servirà per l'autocompletamento tramite 'SELECT * FROM Food WHERE name LIKE ...'
-    const availableFoods = [
-        { id: 1, name: 'Pesto' }, { id: 2, name: 'Pennette' },
-        { id: 3, name: 'Pomodoro' }, { id: 4, name: 'Pollo' },
-        { id: 5, name: 'Patate' }, { id: 6, name: 'Aglio' },
-        { id: 7, name: "Olio Extravergine d'Oliva" },
-        { id: 8, name: 'Spaghetti' },
-        { id: 9, name: 'Passata di pomodoro' },
-        { id: 10, name: 'Rosmarino' },
-    ];
+    const [availableUnits, setAvailableUnits] = useState([]);
+    const [availableFoods, setAvailableFoods] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [difficulties, setDifficulties] = useState([]);
 
     useEffect(() => {
-        fetchRecipes();
-    }, []);
+        if (db) {
+            loadStaticData();
+            fetchRecipes();
+        }
+    }, [db]);
+
+    const loadStaticData = async () => {
+        try {
+            const uoms = await getUnitsOfMeasure(db);
+            setAvailableUnits(uoms);
+            const foods = await getFoods(db);
+            setAvailableFoods(foods);
+            const cats = await getRecipeCategories(db);
+            setCategories(cats);
+            const diffs = await getRecipeDifficulties(db);
+            setDifficulties(diffs);
+        } catch (error) {
+            console.error("Error loading static data:", error);
+        }
+    };
 
     const fetchRecipes = async () => {
-        const mockRecipes = [
-            {
-                id: 1,
-                name: "Spaghetti al Pomodoro",
-                preparationTimeMinutes: 20,
-                numberOfServings: 2,
-                description: "Metti a bollire l'acqua in una pentola.\nAggiungi il sale e la pasta.\nPrepara il sugo di pomodoro a parte.\nScola la pasta e mescolala con il sugo.",
-                difficulty: "Facile",
-                category: "Primo",
-                ingredients: [
-                    { name: "Spaghetti", quantity: 200, unit: "g" },
-                    { name: "Passata di pomodoro", quantity: 300, unit: "ml" },
-                    { name: "Aglio", quantity: 1, unit: "spicchio" },
-                    { name: "Olio Extravergine d'Oliva", quantity: 2, unit: "cucchiai" }
-                ]
-            },
-            {
-                id: 2,
-                name: "Pollo al Forno con Patate",
-                preparationTimeMinutes: 60,
-                numberOfServings: 4,
-                description: "Taglia le patate a cubetti.\nCondisci il pollo e le patate con olio e rosmarino.\nInforna a 200 gradi per 60 minuti.",
-                difficulty: "Medio",
-                category: "Secondo",
-                ingredients: [
-                    { name: "Pollo", quantity: 1, unit: "kg" },
-                    { name: "Patate", quantity: 800, unit: "g" },
-                    { name: "Rosmarino", quantity: 2, unit: "rametti" },
-                    { name: "Olio Extravergine d'Oliva", quantity: 3, unit: "cucchiai" }
-                ]
-            }
-        ];
-        setRecipes(mockRecipes);
+        if (!db) return;
+        try {
+            const rawRecipes = await queryAsArray(db, `
+                SELECT R.id, R.name, R.preparationTimeMinutes, R.numberOfServings, R.description, RC.description AS category, RD.description AS difficulty
+                FROM Recipe AS R
+                JOIN RecipeCategory AS RC ON R.category = RC.id
+                JOIN RecipeDifficulty AS RD ON R.difficulty = RD.id
+            `);
+
+            const rawIngredients = await queryAsArray(db, `
+                SELECT I.recipe AS recipeId, I.quantity, UOM.symbol AS unit, F.name, F.id AS foodId
+                FROM Ingredient AS I
+                JOIN UnitOfMeasure AS UOM ON I.unitOfMeasure = UOM.id
+                JOIN Food AS F ON I.food = F.id
+            `);
+
+            const formattedRecipes = rawRecipes.map(recipe => ({
+                ...recipe,
+                ingredients: rawIngredients.filter(ing => ing.recipeId === recipe.id)
+            }));
+            setRecipes(formattedRecipes);
+        } catch (error) {
+            console.error("Error fetching recipes:", error);
+            Alert.alert("Errore", "Impossibile caricare le ricette.");
+        }
     };
 
     const handleFoodSearch = (text) => {
         setFoodSearchQuery(text);
-        setSelectedFood(null); // Resetta il cibo selezionato se l'utente ricomincia a scrivere
+        setSelectedFood(null);
 
         if (text.trim().length > 0) {
-            // TODO: DB - Sostituire con 'SELECT * FROM Food WHERE name LIKE '%text%''
             const filtered = availableFoods.filter(f => f.name.toLowerCase().includes(text.toLowerCase()));
             setFilteredFoods(filtered);
         } else {
@@ -104,7 +109,7 @@ const RecipeScreen = ({ route }) => {
             foodId: selectedFood.id,
             name: selectedFood.name,
             quantity: parseFloat(ingredientQty),
-            unit: ingredientUnit, // TODO: DB - Qua in futuro salverai l'ID riferito a UnitOfMeasure
+            unit: ingredientUnit,
         };
 
         setEditingRecipe({
@@ -112,7 +117,6 @@ const RecipeScreen = ({ route }) => {
             ingredients: [...(editingRecipe.ingredients || []), newIngredient]
         });
 
-        // Reset dei campi dell'ingrediente per aggiungerne un altro
         setSelectedFood(null);
         setFoodSearchQuery('');
         setIngredientQty('');
@@ -155,6 +159,11 @@ const RecipeScreen = ({ route }) => {
     };
 
     const saveEdit = () => {
+        if (!db) {
+            Alert.alert("Errore", "Database non pronto. Riprova tra qualche istante.");
+            return;
+        }
+
         if (!editingRecipe.name || !editingRecipe.description || !editingRecipe.difficulty || !editingRecipe.category || editingRecipe.preparationTimeMinutes === '' || editingRecipe.numberOfServings === '') {
             Alert.alert("Errore", "Tutti i campi sono obbligatori.");
             return;
@@ -165,26 +174,71 @@ const RecipeScreen = ({ route }) => {
             return;
         }
 
-        // TODO: DB - Sostituire con query 'INSERT/UPDATE INTO Recipe' ed 'INSERT INTO Ingredient'
-        const updatedRecipe = {
-            ...editingRecipe,
-            preparationTimeMinutes: parseInt(editingRecipe.preparationTimeMinutes, 10),
-            numberOfServings: parseInt(editingRecipe.numberOfServings, 10)
+        const saveToDb = async () => {
+            try {
+                let categoryId = categories.find(c => c.description.toLowerCase() === editingRecipe.category.trim().toLowerCase())?.id;
+                if (!categoryId) {
+                    await db.executeSql(`INSERT INTO RecipeCategory (description) VALUES ('${editingRecipe.category.replace(/'/g, "''").trim()}')`);
+                    const res = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                    categoryId = res[0].id;
+                }
+
+                let difficultyId = difficulties.find(d => d.description.toLowerCase() === editingRecipe.difficulty.trim().toLowerCase())?.id;
+                if (!difficultyId) {
+                    await db.executeSql(`INSERT INTO RecipeDifficulty (description) VALUES ('${editingRecipe.difficulty.replace(/'/g, "''").trim()}')`);
+                    const res = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                    difficultyId = res[0].id;
+                }
+
+                let recipeId = editingRecipe.id;
+                const safeName = editingRecipe.name.replace(/'/g, "''");
+                const safeDesc = editingRecipe.description.replace(/'/g, "''");
+                const prepTime = parseInt(editingRecipe.preparationTimeMinutes, 10);
+                const servings = parseInt(editingRecipe.numberOfServings, 10);
+
+                if (recipeId) {
+                    await db.executeSql(`UPDATE Recipe SET name = '${safeName}', preparationTimeMinutes = ${prepTime}, numberOfServings = ${servings}, description = '${safeDesc}', difficulty = ${difficultyId}, category = ${categoryId} WHERE id = ${recipeId}`);
+                    await db.executeSql(`DELETE FROM Ingredient WHERE recipe = ${recipeId}`);
+                } else {
+                    await db.executeSql(`INSERT INTO Recipe (name, preparationTimeMinutes, numberOfServings, description, difficulty, category) VALUES ('${safeName}', ${prepTime}, ${servings}, '${safeDesc}', ${difficultyId}, ${categoryId})`);
+                    const res = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                    recipeId = res[0].id;
+                }
+
+                if (editingRecipe.ingredients) {
+                    for (const ing of editingRecipe.ingredients) {
+                        let uomId = availableUnits.find(u => u.symbol === ing.unit)?.id;
+                        if (!uomId) {
+                            await db.executeSql(`INSERT INTO UnitOfMeasure (symbol) VALUES ('${ing.unit}')`);
+                            const resUom = await queryAsArray(db, 'SELECT last_insert_rowid() AS id');
+                            uomId = resUom[0].id;
+                        }
+                        await db.executeSql(`INSERT INTO Ingredient (quantity, recipe, unitOfMeasure, food) VALUES (${ing.quantity}, ${recipeId}, ${uomId}, ${ing.foodId})`);
+                    }
+                }
+
+                await loadStaticData();
+                await fetchRecipes();
+                setEditingRecipe(null);
+            } catch (error) {
+                console.error("Error saving recipe:", error);
+                Alert.alert("Errore", "Impossibile salvare la ricetta.");
+            }
         };
 
-        if (updatedRecipe.id) {
-            setRecipes((prev) => prev.map((item) => item.id === updatedRecipe.id ? updatedRecipe : item));
-        } else {
-            updatedRecipe.id = Date.now(); // ID Temporaneo
-            setRecipes((prev) => [...prev, updatedRecipe]);
-        }
-        
-        setEditingRecipe(null);
+        saveToDb();
     };
 
-    const removeRecipe = (id) => {
-        // TODO: DB delete function and then update state
-        setRecipes((prev) => prev.filter((item) => item.id !== id));
+    const removeRecipe = async (id) => {
+        try {
+            await db.executeSql(`DELETE FROM Ingredient WHERE recipe = ${id}`);
+            await db.executeSql(`DELETE FROM Meal WHERE recipe = ${id}`);
+            await db.executeSql(`DELETE FROM Recipe WHERE id = ${id}`);
+            await fetchRecipes();
+        } catch (error) {
+            console.error("Error deleting recipe:", error);
+            Alert.alert("Errore", "Impossibile rimuovere la ricetta.");
+        }
     };
 
     const toggleExpand = (id) => {
@@ -278,20 +332,36 @@ const RecipeScreen = ({ route }) => {
                                 />
                                 
                                 <Text style={styles.label}>Categoria</Text>
-                                {/* TODO: Sostituire con un Picker che ottiene le categorie (RecipeCategory) dal DB */}
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingRecipe.category}
-                                    onChangeText={(text) => setEditingRecipe({ ...editingRecipe, category: text })}
-                                />
+                                <View style={styles.pickerContainer}>
+                                    <Picker
+                                        selectedValue={editingRecipe.category}
+                                        onValueChange={(itemValue) =>
+                                            setEditingRecipe({ ...editingRecipe, category: itemValue })
+                                        }
+                                        style={styles.picker}
+                                    >
+                                        <Picker.Item label="Seleziona una categoria..." value="" />
+                                        {categories.map((cat) => (
+                                            <Picker.Item key={cat.id} label={cat.description} value={cat.description} />
+                                        ))}
+                                    </Picker>
+                                </View>
                                 
                                 <Text style={styles.label}>Difficoltà</Text>
-                                {/* TODO: Sostituire con un Picker che ottiene le difficoltà (Difficulty) dal DB */}
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingRecipe.difficulty}
-                                    onChangeText={(text) => setEditingRecipe({ ...editingRecipe, difficulty: text })}
-                                />
+                                <View style={styles.pickerContainer}>
+                                    <Picker
+                                        selectedValue={editingRecipe.difficulty}
+                                        onValueChange={(itemValue) =>
+                                            setEditingRecipe({ ...editingRecipe, difficulty: itemValue })
+                                        }
+                                        style={styles.picker}
+                                    >
+                                        <Picker.Item label="Seleziona una difficoltà..." value="" />
+                                        {difficulties.map((diff) => (
+                                            <Picker.Item key={diff.id} label={diff.description} value={diff.description} />
+                                        ))}
+                                    </Picker>
+                                </View>
                                 
                                 <Text style={styles.label}>Tempo di Preparazione (minuti)</Text>
                                 <TextInput
@@ -355,8 +425,8 @@ const RecipeScreen = ({ route }) => {
                                             <Text style={styles.label}>Unità di misura</Text>
                                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.unitSelector}>
                                                 {availableUnits.map(u => (
-                                                    <TouchableOpacity key={u} style={[styles.unitBtn, ingredientUnit === u && styles.unitBtnActive]} onPress={() => setIngredientUnit(u)}>
-                                                        <Text style={[styles.unitBtnText, ingredientUnit === u && styles.unitBtnTextActive]}>{u}</Text>
+                                                    <TouchableOpacity key={u.id} style={[styles.unitBtn, ingredientUnit === u.symbol && styles.unitBtnActive]} onPress={() => setIngredientUnit(u.symbol)}>
+                                                        <Text style={[styles.unitBtnText, ingredientUnit === u.symbol && styles.unitBtnTextActive]}>{u.symbol}</Text>
                                                     </TouchableOpacity>
                                                 ))}
                                             </ScrollView>
@@ -550,6 +620,18 @@ const styles = StyleSheet.create({
     unitBtnActive: { backgroundColor: '#28a745', borderColor: '#28a745' },
     unitBtnText: { fontSize: 14, color: '#28a745' },
     unitBtnTextActive: { color: '#fff', fontWeight: 'bold' },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: '#c8e6c9',
+        borderRadius: 8,
+        marginBottom: 12,
+        backgroundColor: '#f8f9fa',
+        justifyContent: 'center',
+    },
+    picker: {
+        height: 50,
+        width: '100%',
+    },
 });
 
 export default RecipeScreen;

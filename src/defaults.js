@@ -33,7 +33,7 @@ export async function insertDefaultValues(db) {
             "INSERT INTO TimeSlot (id, name) VALUES (1, 'Colazione')",
             "INSERT INTO TimeSlot (id, name) VALUES (2, 'Merenda')",
             "INSERT INTO TimeSlot (id, name) VALUES (3, 'Pranzo')",
-            "INSERT INTO TimeSlot (id, name) VALUES (4, 'Spuntino')"
+            "INSERT INTO TimeSlot (id, name) VALUES (4, 'Spuntino')",
             "INSERT INTO TimeSlot (id, name) VALUES (5, 'Cena')",
         ]);
 

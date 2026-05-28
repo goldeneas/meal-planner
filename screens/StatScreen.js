@@ -5,7 +5,7 @@ import StatPieChart from "../components/StatPieChart";
 import StatBarChart from "../components/StatBarChart";
 import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes } from "../src/stats";
 import { useState, useEffect } from "react";
-import { getUnitsOfMeasure } from "../src/uom";
+import { getUnitOfMeasureIdBySymbol, getUnitsOfMeasure } from "../src/uom";
 
 const styles = StyleSheet.create({
     grid: {

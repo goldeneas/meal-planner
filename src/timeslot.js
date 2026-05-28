@@ -5,5 +5,5 @@ export async function getTimeSlots(db) {
 }
 
 export async function getTimeSlotNameById(db, id) {
-    return await queryFirstAsync(db, "SELECT name FROM TimeSlot WHERE id = " + id)
+    return await queryFirstAsync(db, "SELECT name FROM TimeSlot WHERE id = ?", [id])
 }

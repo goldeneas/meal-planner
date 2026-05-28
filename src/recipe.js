@@ -15,17 +15,17 @@ export async function getRecipes(db) {
 export async function getRecipeIngredientsById(db, id) {
     return await queryAllAsync(db, `SELECT I.id FROM Recipe AS R
             JOIN Ingredient AS I ON (R.id = I.recipe)
-            WHERE R.id = ` + id)
+            WHERE R.id = ?`, [id])
 }
 
 export async function getRecipeDifficultyById(db, id) {
     return await queryFirstAsync(db, `SELECT RD.description FROM Recipe AS R
             JOIN RecipeDifficulty AS RD ON (R.difficulty = RD.id)
-            WHERE R.id = ` + id)
+            WHERE R.id = `, [id])
 }
 
 export async function getRecipeCategoryById(db, id) {
     return await queryFirstAsync(db, `SELECT RC.description FROM Recipe AS R
             JOIN RecipeCategory AS RC ON (R.category = RC.id)
-            WHERE R.id = ` + id)
+            WHERE R.id = `, [id])
 }

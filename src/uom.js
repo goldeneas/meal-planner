@@ -5,11 +5,13 @@ export async function getUnitsOfMeasure(db) {
 }
 
 export async function getUnitOfMeasureIdBySymbol(db, symbol) {
-    return await queryFirstAsync(db, "SELECT id FROM UnitOfMeasure WHERE symbol = " + symbol).id
+    const res = await queryFirstAsync(db, "SELECT id FROM UnitOfMeasure WHERE symbol = ?", [symbol])
+    return res.id
 }
 
 export async function getUnitOfMeasureSymbolById(db, id) {
-    return await queryFirstAsync(db, "SELECT symbol FROM UnitOfMeasure WHERE id = " + id).symbol
+    const res = await queryFirstAsync(db, "SELECT symbol FROM UnitOfMeasure WHERE id = ?", [id])
+    return res.symbol
 }
 
 export async function getUnitOfMeasureSymbols(db) {

@@ -100,9 +100,9 @@ export async function createTables(db) {
   `);
 }
 
-export async function queryAllAsync(db, query) {
+export async function queryAllAsync(db, query, params) {
     try {
-        const res = await db.getAllAsync(query);
+        const res = await db.getAllAsync(query, params);
         return res;
     } catch (e) {
         console.error("error in queryAllAsync: ", e);
@@ -110,9 +110,9 @@ export async function queryAllAsync(db, query) {
     }
 }
 
-export async function queryFirstAsync(db, query) {
+export async function queryFirstAsync(db, query, params) {
     try {
-        const res = await db.getFirstAsync(query);
+        const res = await db.getFirstAsync(query, params);
         return res;
     } catch (e) {
         console.error("error in queryFirstAsync: ", e);
@@ -120,9 +120,9 @@ export async function queryFirstAsync(db, query) {
     }
 }
 
-export async function executeAsync(db, query) {
+export async function executeAsync(db, query, params) {
     try {
-        await db.runAsync(query);
+        await db.runAsync(query, params);
     } catch (e) {
         console.error("error in executeAsync: ", e);
     }

@@ -3,9 +3,8 @@ import StatTextHeader from "../components/StatTextHeader";
 import StatCounter from "../components/StatCounter";
 import StatPieChart from "../components/StatPieChart";
 import StatBarChart from "../components/StatBarChart";
-import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes } from "../src/stats";
+import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes, getMostMealsByCategory, getMostRecipesByCategory, getMostUsedIngredients } from "../src/stats";
 import { useState, useEffect } from "react";
-import { getUnitOfMeasureIdBySymbol, getUnitsOfMeasure } from "../src/uom";
 
 const styles = StyleSheet.create({
     grid: {
@@ -31,6 +30,9 @@ const styles = StyleSheet.create({
 
 export const StatScreen = ({ navigation, db }) => {
     const [counters, setCounters] = useState([]);
+    const [mostMealsByCategory, setMostMealsByCategory] = useState([]);
+    const [mostRecipesByCategory, setMostRecipesByCategory] = useState([]);
+    const [mostUsedIngredients, setMostUsedIngredients] = useState([]);
 
     // carica
     useEffect(() => {
@@ -42,6 +44,9 @@ export const StatScreen = ({ navigation, db }) => {
                 expiredProductsCount,
                 missingFoodCount,
                 avgRecipePrepTimeMinutes,
+                mui,
+                mmbc,
+                mrbc
             ] = await Promise.all([
                 countSavedRecipes(db),
                 countPlannedMeals(db),
@@ -49,7 +54,14 @@ export const StatScreen = ({ navigation, db }) => {
                 countExpiredProducts(db),
                 countMissingFood(db),
                 countAvgRecipePrepTime(db),
+                getMostUsedIngredients(db),
+                getMostMealsByCategory(db),
+                getMostRecipesByCategory(db)
             ]);
+
+            setMostUsedIngredients(mui)
+            setMostMealsByCategory(mmbc)
+            setMostRecipesByCategory(mrbc)
 
             setCounters([
                 { label: 'Ricette Salvate', value: savedRecipesCount.count },
@@ -64,13 +76,6 @@ export const StatScreen = ({ navigation, db }) => {
         loadStats();
     }, [db]);
 
-    const series = [
-        { value: 430, label: 'Pomodoro' },
-        { value: 321, label: 'Cipolla rossa di Tropea' },
-        { value: 185, label: 'Tartufo nero' },
-        { value: 123, label: 'Cipolla ramata di Montoro' },
-    ]
-
     return (
         <ScrollView>
             <View style={styles.grid}>
@@ -79,11 +84,11 @@ export const StatScreen = ({ navigation, db }) => {
                     <StatCounter key={index} counter={entry.value} label={entry.label} />
                 ))}
                 <StatTextHeader text={"Ingredienti Più Usati"} />
-                <StatBarChart series={series} />
+                <StatBarChart series={mostUsedIngredients} />
                 <StatTextHeader text={"Categorie di Pasti Frequenti"} />
-                <StatPieChart widthAndHeight={250} series={series} />
+                <StatPieChart widthAndHeight={250} series={mostRecipesByCategory} />
                 <StatTextHeader text={"Ricette per Categoria"} />
-                <StatPieChart widthAndHeight={250} series={series} />
+                <StatPieChart widthAndHeight={250} series={mostMealsByCategory} />
             </View>
         </ScrollView>
     );

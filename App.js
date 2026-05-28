@@ -3,7 +3,7 @@ import { View, Text, Button } from "react-native";
 
 import * as SQLite from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { createTables, getDatabase } from './src/database.js'
+import { createTables } from './src/database.js'
 import { insertDefaultValues } from './src/defaults.js'
 import PantryScreen from "./screens/PantryScreen";
 import { StatScreen } from "./screens/StatScreen.js";

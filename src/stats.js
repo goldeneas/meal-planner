@@ -31,26 +31,26 @@ export async function countAvgRecipePrepTime(db) {
 }
 
 export async function getMostUsedIngredients(db) {
-    return await queryAllAsync(db, `SELECT F.name, COUNT(I.id) FROM Ingredient AS I
+    return await queryAllAsync(db, `SELECT F.name AS label, COUNT(I.id) AS value FROM Ingredient AS I
         JOIN Food AS F ON (I.food = F.id)
         GROUP BY F.id
-        ORDER BY COUNT(id) DESC
+        ORDER BY COUNT(I.id) DESC
         LIMIT 5
     `)
 }
 
 export async function getMostMealsByCategory(db) {
-    return await queryAllAsync(db, `SELECT RC.description, COUNT(M.id) FROM Meal AS M
+    return await queryAllAsync(db, `SELECT RC.description AS label, COUNT(M.id) AS value FROM Meal AS M
         JOIN Recipe AS R ON (R.id = M.recipe)
         JOIN RecipeCategory AS RC ON (R.category = RC.id)
         GROUP BY R.category
         ORDER BY COUNT(M.id) DESC
-        LIMIT 5\
+        LIMIT 5
         `)
 }
 
 export async function getMostRecipesByCategory(db) {
-    return await queryAllAsync(db, `SELECT RC.description, COUNT(R.id) FROM Recipe AS R
+    return await queryAllAsync(db, `SELECT RC.description AS label, COUNT(R.id) AS value FROM Recipe AS R
         JOIN RecipeCategory AS RC ON (R.id = RC.id)
         GROUP BY R.category
         ORDER BY COUNT(R.id) DESC

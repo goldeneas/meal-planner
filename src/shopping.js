@@ -1,4 +1,4 @@
-import { queryAllAsync } from "./database";
+import { executeAsync, queryAllAsync } from "./database";
 
 export async function getShoppingItems(db) {
     return await queryAllAsync(db, "SELECT * FROM ShoppingItem");

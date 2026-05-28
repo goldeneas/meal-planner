@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-import { queryAllAsync } from '../src/database';
+import { queryAllAsync, executeAsync } from '../src/database';
 import { getRecipeCategories, getRecipeDifficulties } from '../src/recipe';
 import { getUnitsOfMeasure } from '../src/uom';
 import { getFoods } from '../src/food';

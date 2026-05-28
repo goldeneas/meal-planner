@@ -1,4 +1,4 @@
-import { queryAllAsync } from "./database";
+import { queryAllAsync, queryFirstAsync } from "./database";
 
 export async function getRecipeCategories(db) {
     return await queryAllAsync(db, "SELECT * FROM RecipeCategory")
@@ -21,11 +21,11 @@ export async function getRecipeIngredientsById(db, id) {
 export async function getRecipeDifficultyById(db, id) {
     return await queryFirstAsync(db, `SELECT RD.description FROM Recipe AS R
             JOIN RecipeDifficulty AS RD ON (R.difficulty = RD.id)
-            WHERE R.id = `, [id])
+            WHERE R.id = ?`, [id])
 }
 
 export async function getRecipeCategoryById(db, id) {
     return await queryFirstAsync(db, `SELECT RC.description FROM Recipe AS R
             JOIN RecipeCategory AS RC ON (R.category = RC.id)
-            WHERE R.id = `, [id])
+            WHERE R.id = ?`, [id])
 }

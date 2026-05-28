@@ -66,9 +66,6 @@ export const StatScreen = ({ navigation, db }) => {
             setMostMealsByCategory(mmbc)
             setMostRecipesByCategory(mrbc)
 
-            console.log("HI")
-            console.log(await getShoppingItems(db))
-
             setCounters([
                 { label: 'Ricette Salvate', value: savedRecipesCount.count },
                 { label: 'Pasti Pianificati', value: plannedMealsCount.count },

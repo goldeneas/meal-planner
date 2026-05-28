@@ -1,4 +1,4 @@
-import { queryAllAsync } from "./database";
+import { queryAllAsync, queryFirstAsync } from "./database";
 
 export async function getTimeSlots(db) {
     return await queryAllAsync(db, "SELECT * FROM TimeSlot")

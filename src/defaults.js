@@ -1,11 +1,11 @@
 export async function insertDefaultValues(db) {
     try {
         await db.execAsync(`
-            INSERT OR REPLACE INTO UnitOfMeasure (id, symbol) VALUES 
+            INSERT OR IGNORE INTO UnitOfMeasure (id, symbol) VALUES 
             (1, 'g'), 
             (2, 'ml');
 
-            INSERT OR REPLACE INTO DayOfWeek (id, name) VALUES 
+            INSERT OR IGNORE INTO DayOfWeek (id, name) VALUES 
             (1, 'Lunedì'),
             (2, 'Martedì'),
             (3, 'Mercoledì'),
@@ -14,26 +14,26 @@ export async function insertDefaultValues(db) {
             (6, 'Sabato'),
             (7, 'Domenica');
 
-            INSERT OR REPLACE INTO TimeSlot (id, name) VALUES 
+            INSERT OR IGNORE INTO TimeSlot (id, name) VALUES 
             (1, 'Colazione'),
             (2, 'Merenda'),
             (3, 'Pranzo'),
             (4, 'Spuntino'),
             (5, 'Cena');
 
-            INSERT OR REPLACE INTO RecipeDifficulty (id, description) VALUES 
+            INSERT OR IGNORE INTO RecipeDifficulty (id, description) VALUES 
             (1, 'Facile'),
             (2, 'Media'),
             (3, 'Difficile');
 
-            INSERT OR REPLACE INTO RecipeCategory (id, description) VALUES 
+            INSERT OR IGNORE INTO RecipeCategory (id, description) VALUES 
             (1, 'Primo Piatto'),
             (2, 'Secondo Piatto'),
             (3, 'Contorno'),
             (4, 'Dolce'),
             (5, 'Antipasto');
 
-            INSERT OR REPLACE INTO FoodCategory (id, description) VALUES 
+            INSERT OR IGNORE INTO FoodCategory (id, description) VALUES 
             (1, 'Verdura'),
             (2, 'Frutta'),
             (3, 'Carne'),

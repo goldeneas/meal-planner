@@ -100,30 +100,31 @@ export async function createTables(db) {
   `);
 }
 
-export async function queryAllAsync(db, query, params) {
+export async function queryAllAsync(db, query, params = []) {
     try {
         const res = await db.getAllAsync(query, params);
         return res;
     } catch (e) {
         console.error("error in queryAllAsync: ", e);
-        return null;
     }
 }
 
-export async function queryFirstAsync(db, query, params) {
+export async function queryFirstAsync(db, query, params = []) {
     try {
         const res = await db.getFirstAsync(query, params);
         return res;
     } catch (e) {
         console.error("error in queryFirstAsync: ", e);
-        return null;
     }
 }
 
-export async function executeAsync(db, query, params) {
+export async function executeAsync(db, query, params = []) {
     try {
-        await db.runAsync(query, params);
+        const res = await db.runAsync(query, params);
+        return res;
     } catch (e) {
         console.error("error in executeAsync: ", e);
+        console.error("params: ", params);
+        console.error("query: ", query);
     }
 }

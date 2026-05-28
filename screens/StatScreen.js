@@ -5,6 +5,9 @@ import StatPieChart from "../components/StatPieChart";
 import StatBarChart from "../components/StatBarChart";
 import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes, getMostMealsByCategory, getMostRecipesByCategory, getMostUsedIngredients } from "../src/stats";
 import { useState, useEffect } from "react";
+import { getFoodCategories, getFoods, insertFood } from "../src/food";
+import { getShoppingItems, insertShoppingItem } from "../src/shopping";
+import { getUnitsOfMeasure } from "../src/uom";
 
 const styles = StyleSheet.create({
     grid: {
@@ -62,6 +65,9 @@ export const StatScreen = ({ navigation, db }) => {
             setMostUsedIngredients(mui)
             setMostMealsByCategory(mmbc)
             setMostRecipesByCategory(mrbc)
+
+            console.log("HI")
+            console.log(await getShoppingItems(db))
 
             setCounters([
                 { label: 'Ricette Salvate', value: savedRecipesCount.count },

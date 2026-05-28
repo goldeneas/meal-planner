@@ -6,7 +6,7 @@ export async function getShoppingItems(db) {
 
 export async function insertShoppingItem(db, item) {
     const query = `
-        INSERT INTO ShoppingItem (name, quantity, food, purchaseDate, unitOfMeasure)
+        INSERT INTO ShoppingItem(name, quantity, food, purchaseDate, unitOfMeasure)
         VALUES (?, ?, ?, ?, ?)
     `;
 

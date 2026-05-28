@@ -12,6 +12,11 @@ export async function getFoods(db) {
     return await queryAllAsync(db, "SELECT * FROM Food");
 }
 
+export async function insertFood(db, food) {
+    const params = [food.name, food.description, food.category]
+    await executeAsync(db, "INSERT INTO Food(name, description, category) VALUES(?, ?, ?)", params)
+}
+
 export async function updateFoodById(db, id, food) {
     const query = `
         UPDATE Food SET

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-import { queryAllAsync, executeAsync } from '../src/database';
-import { getRecipeCategories, getRecipeDifficulties } from '../src/recipe';
+import { getRecipeCategories, getRecipeDifficulties, getRecipes, insertRecipe, updateRecipeById, removeRecipeById } from '../src/recipe';
 import { getUnitsOfMeasure } from '../src/uom';
 import { getFoods } from '../src/food';
+import { getIngredients, insertIngredient, removeIngredientsByRecipeId } from '../src/ingredient';
 
 
 const RecipeScreen = ({ route, db }) => {
@@ -56,24 +56,33 @@ const RecipeScreen = ({ route, db }) => {
     const fetchRecipes = async () => {
         if (!db) return;
         try {
-            const rawRecipes = await queryAllAsync(db, `
-                SELECT R.id, R.name, R.preparationTimeMinutes, R.numberOfServings, R.description, RC.description AS category, RD.description AS difficulty
-                FROM Recipe AS R
-                JOIN RecipeCategory AS RC ON R.category = RC.id
-                JOIN RecipeDifficulty AS RD ON R.difficulty = RD.id
-            `);
+            const rawRecipes = await getRecipes(db);
+            const allIngredients = await getIngredients(db);
+            const cats = await getRecipeCategories(db);
+            const diffs = await getRecipeDifficulties(db);
+            const uoms = await getUnitsOfMeasure(db);
+            const foods = await getFoods(db);
 
-            const rawIngredients = await queryAllAsync(db, `
-                SELECT I.recipe AS recipeId, I.quantity, UOM.symbol AS unit, F.name, F.id AS foodId
-                FROM Ingredient AS I
-                JOIN UnitOfMeasure AS UOM ON I.unitOfMeasure = UOM.id
-                JOIN Food AS F ON I.food = F.id
-            `);
+            const formattedRecipes = rawRecipes.map(recipe => {
+                const catDesc = cats.find(c => c.id === recipe.category)?.description || '';
+                const diffDesc = diffs.find(d => d.id === recipe.difficulty)?.description || '';
+                
+                const recipeIngredients = allIngredients
+                    .filter(ing => ing.recipe === recipe.id)
+                    .map(ing => ({
+                        foodId: ing.food,
+                        quantity: ing.quantity,
+                        unit: uoms.find(u => u.id === ing.unitOfMeasure)?.symbol || '',
+                        name: foods.find(f => f.id === ing.food)?.name || ''
+                    }));
 
-            const formattedRecipes = rawRecipes.map(recipe => ({
-                ...recipe,
-                ingredients: rawIngredients.filter(ing => ing.recipeId === recipe.id)
-            }));
+                return {
+                    ...recipe,
+                    category: catDesc,
+                    difficulty: diffDesc,
+                    ingredients: recipeIngredients
+                };
+            });
             setRecipes(formattedRecipes);
         } catch (error) {
             console.error("Error fetching recipes:", error);
@@ -177,43 +186,39 @@ const RecipeScreen = ({ route, db }) => {
         const saveToDb = async () => {
             try {
                 let categoryId = categories.find(c => c.description.toLowerCase() === editingRecipe.category.trim().toLowerCase())?.id;
-                if (!categoryId) {
-                    await db.executeSql(`INSERT INTO RecipeCategory (description) VALUES ('${editingRecipe.category.replace(/'/g, "''").trim()}')`);
-                    const res = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
-                    categoryId = res[0].id;
-                }
-
                 let difficultyId = difficulties.find(d => d.description.toLowerCase() === editingRecipe.difficulty.trim().toLowerCase())?.id;
-                if (!difficultyId) {
-                    await db.executeSql(`INSERT INTO RecipeDifficulty (description) VALUES ('${editingRecipe.difficulty.replace(/'/g, "''").trim()}')`);
-                    const res = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
-                    difficultyId = res[0].id;
+
+                if (!categoryId || !difficultyId) {
+                    Alert.alert("Errore", "Seleziona una categoria e una difficoltà valide.");
+                    return;
                 }
 
                 let recipeId = editingRecipe.id;
-                const safeName = editingRecipe.name.replace(/'/g, "''");
-                const safeDesc = editingRecipe.description.replace(/'/g, "''");
+                const safeName = editingRecipe.name.trim();
+                const safeDesc = editingRecipe.description.trim();
                 const prepTime = parseInt(editingRecipe.preparationTimeMinutes, 10);
                 const servings = parseInt(editingRecipe.numberOfServings, 10);
 
+                const recipeData = { name: safeName, preparationTimeMinutes: prepTime, numberOfServings: servings, description: safeDesc, difficulty: difficultyId, category: categoryId };
+
                 if (recipeId) {
-                    await db.executeSql(`UPDATE Recipe SET name = '${safeName}', preparationTimeMinutes = ${prepTime}, numberOfServings = ${servings}, description = '${safeDesc}', difficulty = ${difficultyId}, category = ${categoryId} WHERE id = ${recipeId}`);
-                    await db.executeSql(`DELETE FROM Ingredient WHERE recipe = ${recipeId}`);
+                    await updateRecipeById(db, recipeId, recipeData);
+                    await removeIngredientsByRecipeId(db, recipeId);
                 } else {
-                    await db.executeSql(`INSERT INTO Recipe (name, preparationTimeMinutes, numberOfServings, description, difficulty, category) VALUES ('${safeName}', ${prepTime}, ${servings}, '${safeDesc}', ${difficultyId}, ${categoryId})`);
-                    const res = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
-                    recipeId = res[0].id;
+                    recipeId = await insertRecipe(db, recipeData);
                 }
 
                 if (editingRecipe.ingredients) {
                     for (const ing of editingRecipe.ingredients) {
                         let uomId = availableUnits.find(u => u.symbol === ing.unit)?.id;
-                        if (!uomId) {
-                            await db.executeSql(`INSERT INTO UnitOfMeasure (symbol) VALUES ('${ing.unit}')`);
-                            const resUom = await queryAllAsync(db, 'SELECT last_insert_rowid() AS id');
-                            uomId = resUom[0].id;
+                        if (uomId) {
+                            await insertIngredient(db, {
+                                quantity: ing.quantity,
+                                recipe: recipeId,
+                                unitOfMeasure: uomId,
+                                food: ing.foodId
+                            });
                         }
-                        await db.executeSql(`INSERT INTO Ingredient (quantity, recipe, unitOfMeasure, food) VALUES (${ing.quantity}, ${recipeId}, ${uomId}, ${ing.foodId})`);
                     }
                 }
 
@@ -230,10 +235,9 @@ const RecipeScreen = ({ route, db }) => {
     };
 
     const removeRecipe = async (id) => {
+        if (!db) return;
         try {
-            await db.executeSql(`DELETE FROM Ingredient WHERE recipe = ${id}`);
-            await db.executeSql(`DELETE FROM Meal WHERE recipe = ${id}`);
-            await db.executeSql(`DELETE FROM Recipe WHERE id = ${id}`);
+            await removeRecipeById(db, id);
             await fetchRecipes();
         } catch (error) {
             console.error("Error deleting recipe:", error);

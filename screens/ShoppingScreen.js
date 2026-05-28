@@ -1,53 +1,94 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView, TextInput, Keyboard, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import StatTextHeader from '../components/StatTextHeader';
+import { getShoppingItems, insertShoppingItem, deleteShoppingItem, updateShoppingItemQuantity, setShoppingItemPurchased } from '../src/shopping';
+import { getFoods, insertFood } from '../src/food';
 
-const ShoppingScreen = () => {
-    const [items, setItems] = useState([
-        { id: 1, name: "Farina 00", quantity: 1, unit: "kg", selected: false, category: "Cereali" },
-        { id: 2, name: "Uova", quantity: 6, unit: "pz", selected: false, category: "Proteine" },
-    ]);
-    
+const ShoppingScreen = ({ db }) => {
+    const [items, setItems] = useState([]);
     const [newName, setNewName] = useState('');
     const [newQty, setNewQty] = useState('1');
-    const [newUnit, setNewUnit] = useState('pz');
+    const [newUnit, setNewUnit] = useState('g');
 
-    const units = ['pz', 'kg', 'g', 'l', 'ml'];
+    const units = ['g', 'ml'];
 
-    const addItem = () => {
-        if (newName.trim().length === 0) return;
-        const newItem = {
-            id: Date.now(),
-            name: newName,
-            quantity: parseFloat(newQty) || 1,
-            unit: newUnit,
-            selected: false,
+    useEffect(() => {
+        if (db) {
+            fetchItems();
+        }
+    }, [db]);
+
+    const fetchItems = async () => {
+        const data = await getShoppingItems(db);
+        const mappedData = data.map(dbItem => ({
+            id: dbItem.id,
+            name: dbItem.name,
+            quantity: dbItem.quantity,
+            unit: dbItem.unitOfMeasure === 2 ? 'ml' : 'g',
+            selected: !!dbItem.purchased,
             category: "Generico"
+        }));
+        setItems(mappedData);
+    };
+
+    const addItem = async () => {
+        const productName = newName.trim();
+        if (productName.length === 0) return;
+        
+        let uomId = 1;
+        if (newUnit === 'ml') uomId = 2;
+
+        let foodId = null;
+        const foods = await getFoods(db);
+        const existingFood = foods.find(f => f.name.toLowerCase() === productName.toLowerCase());
+
+        if (existingFood) {
+            foodId = existingFood.id;
+        } else {
+            await insertFood(db, {
+                name: productName,
+                description: "Creato da lista spesa",
+                category: 8
+            });
+            
+            const updatedFoods = await getFoods(db);
+            const newFood = updatedFoods.find(f => f.name.toLowerCase() === productName.toLowerCase());
+            foodId = newFood ? newFood.id : null;
+        }
+
+        const newItem = {
+            name: productName,
+            quantity: parseFloat(newQty) || 1,
+            food: foodId,
+            purchaseDate: new Date().toISOString().split('T')[0],
+            unitOfMeasure: uomId
         };
-        setItems([...items, newItem]);
+
+        await insertShoppingItem(db, newItem);
+        
         setNewName('');
         setNewQty('1');
         Keyboard.dismiss();
+        await fetchItems();
     };
 
-    const deleteItem = (id) => {
-        setItems(items.filter(item => item.id !== id));
+    const deleteItem = async (id) => {
+        await deleteShoppingItem(db, id);
+        await fetchItems();
     };
 
-    const updateQuantity = (id, delta) => {
-        setItems(prev => prev.map(item => {
-            if (item.id === id) {
-                const newVal = Math.max(0.1, item.quantity + delta);
-                return { ...item, quantity: Number(newVal.toFixed(1)) };
-            }
-            return item;
-        }));
+    const updateQuantity = async (id, currentQty, delta) => {
+        const newVal = Math.max(0.1, currentQty + delta);
+        const finalQty = Number(newVal.toFixed(1));
+        await updateShoppingItemQuantity(db, id, finalQty);
+        await fetchItems();
     };
 
-    const toggleItem = (id) => {
-        setItems(prev => prev.map(item => 
-            item.id === id ? { ...item, selected: !item.selected } : item
-        ));
+    const toggleItem = async (id, currentSelected) => {
+        const nextStatus = currentSelected ? 0 : 1;
+        await setShoppingItemPurchased(db, id, nextStatus);
+        await fetchItems();
     };
 
     const CustomCheckbox = ({ isChecked }) => (
@@ -58,7 +99,7 @@ const ShoppingScreen = () => {
 
     const renderItem = ({ item }) => (
         <View style={[styles.card, item.selected && styles.cardSelected]}>
-            <TouchableOpacity style={styles.cardContent} onPress={() => toggleItem(item.id)}>
+            <TouchableOpacity style={styles.cardContent} onPress={() => toggleItem(item.id, item.selected)}>
                 <CustomCheckbox isChecked={item.selected} />
                 <View style={styles.textContainer}>
                     <Text style={[styles.itemName, item.selected && styles.textSelected]}>
@@ -69,11 +110,11 @@ const ShoppingScreen = () => {
             </TouchableOpacity>
             
             <View style={styles.quantityControls}>
-                <TouchableOpacity onPress={() => updateQuantity(item.id, -0.5)} style={styles.qtyBtn}>
+                <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity, -0.5)} style={styles.qtyBtn}>
                     <Text style={styles.qtyBtnText}>-</Text>
                 </TouchableOpacity>
                 <Text style={styles.qtyText}>{item.quantity}</Text>
-                <TouchableOpacity onPress={() => updateQuantity(item.id, 0.5)} style={styles.qtyBtn}>
+                <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity, 0.5)} style={styles.qtyBtn}>
                     <Text style={styles.qtyBtnText}>+</Text>
                 </TouchableOpacity>
             </View>
@@ -120,11 +161,8 @@ const ShoppingScreen = () => {
                     ))}
                 </View>
 
-                <TouchableOpacity 
-                    style={styles.autoGenerateBtn} 
-                    onPress={() => Alert.alert("Auto-Generate", "Analisi dispensa e pasti in corso...")}
-                >
-                    <Text style={styles.autoGenerateBtnText}>Auto-Generate from Meals</Text>
+                <TouchableOpacity style={styles.autoGenerateBtn}>
+                    <Text style={styles.autoGenerateBtnText}>Generazione automatica</Text>
                 </TouchableOpacity>
             </View>
 

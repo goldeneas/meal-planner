@@ -1,54 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
+import { queryAllAsync, executeAsync, queryFirstAsync } from '../src/database';
+import { getFoodCategories, getFoods, insertFood, updateFoodById } from '../src/food';
+import { getUnitsOfMeasure } from '../src/uom';
 
-// TODO: wait for DB functions and then uncoment this and remove mock data in fetchPantryItems
-
-
-const PantryScreen = () => {
+const PantryScreen = ({ route, db }) => {
     const [pantryItems, setPantryItems] = useState([]);
     const [editingItem, setEditingItem] = useState(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
+    
+    const [categories, setCategories] = useState([]);
+    const [units, setUnits] = useState([]);
 
     useEffect(() => {
-        fetchPantryItems();
-    }, []);
+        if (db) {
+            loadStaticData();
+            fetchPantryItems();
+        }
+    }, [db]);
+
+    const loadStaticData = async () => {
+        try {
+            const cats = await getFoodCategories(db);
+            setCategories(cats || []);
+            const uoms = await getUnitsOfMeasure(db);
+            setUnits(uoms || []);
+        } catch (error) {
+            console.error("Error loading static data:", error);
+        }
+    };
 
     const fetchPantryItems = async () => {
-        const mockItems = [
-            {
-                id: 1,
-                name: "Spaghetti",
-                category: "Cereali",
-                quantity: 500,
-                warningQuantity: 100,
-                unitOfMeasure: "g",
-                expirationDate: "2027-12-31",
-                note: "Scadenza a lungo termine"
-            },
-            {
-                id: 2,
-                name: "Passata di pomodoro",
-                category: "Verdura e ortaggi",
-                quantity: 2,
-                warningQuantity: 1,
-                unitOfMeasure: "pz",
-                expirationDate: "2026-10-15",
-                note: "Fatte in casa, utilizzare prima per i sughi"
-            },
-            {
-                id: 3,
-                name: "Olio Extravergine d'Oliva",
-                category: "Condimenti",
-                quantity: 1,
-                warningQuantity: 0.5,
-                unitOfMeasure: "L",
-                expirationDate: null,
-                note: null
-            }
-        ];
-
-        setPantryItems(mockItems);
+        if (!db) return;
+        try {
+            const rawItems = await queryAllAsync(db, `
+                SELECT P.id, F.name, P.quantity, P.warningQuantity, P.expirationDate, P.note,
+                       FC.description AS category, UOM.symbol AS unitOfMeasure
+                FROM PantryProduct AS P
+                JOIN Food AS F ON P.food = F.id
+                LEFT JOIN FoodCategory AS FC ON F.category = FC.id
+                LEFT JOIN UnitOfMeasure AS UOM ON P.unitOfMeasure = UOM.id
+            `);
+            setPantryItems(rawItems);
+        } catch (error) {
+            console.error("Error fetching pantry items:", error);
+            Alert.alert("Errore", "Impossibile caricare i prodotti della dispensa.");
+        }
     };
 
     const handleEditClick = (item) => {
@@ -67,7 +66,7 @@ const PantryScreen = () => {
         });
     };
 
-    const saveEdit = () => {
+    const saveEdit = async () => {
         if (!editingItem.name || !editingItem.category || !editingItem.unitOfMeasure || editingItem.quantity === '' || editingItem.quantity == null) {
             Alert.alert("Errore", "I campi Nome, Categoria, Quantità e Unità di misura sono obbligatori.");
             return;
@@ -83,26 +82,56 @@ const PantryScreen = () => {
             return;
         }
 
-        if (editingItem.expirationDate && !/^\d{4}-\d{2}-\d{2}$/.test(editingItem.expirationDate)) {
+        const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (editingItem.expirationDate && !dateFormatRegex.test(editingItem.expirationDate)) {
             Alert.alert("Errore", "La data di scadenza deve essere nel formato YYYY-MM-DD.");
             return;
         }
 
-        // TODO: DB update function and then update state
-        const updatedItem = {
-            ...editingItem,
-            quantity: parseFloat(editingItem.quantity) || 0,
-            warningQuantity: editingItem.warningQuantity ? parseFloat(editingItem.warningQuantity) : null
-        };
-
-        if (updatedItem.id) {
-            setPantryItems((prevItems) => prevItems.map((item) => item.id === updatedItem.id ? updatedItem : item));
-        } else {
-            updatedItem.id = Date.now(); // Genera un ID temporaneo per i nuovi elementi inseriti localmente
-            setPantryItems((prevItems) => [...prevItems, updatedItem]);
+        if (!db) {
+            Alert.alert("Errore", "Database non pronto.");
+            return;
         }
 
-        setEditingItem(null);
+        try {
+            let categoryId = categories.find(c => (c.description || c.name) === editingItem.category)?.id;
+            let uomId = units.find(u => u.symbol === editingItem.unitOfMeasure)?.id;
+
+            const safeName = editingItem.name.trim();
+            const qty = parseFloat(editingItem.quantity) || 0;
+            const warnQty = editingItem.warningQuantity ? parseFloat(editingItem.warningQuantity) : null;
+            const expDate = editingItem.expirationDate || null;
+            const note = editingItem.note || null;
+
+            const foods = await getFoods(db);
+            const existingFood = foods.find(f => f.name && f.name.toLowerCase() === safeName.toLowerCase());
+            let foodId;
+            if (existingFood) {
+                foodId = existingFood.id;
+                if (categoryId && existingFood.category !== categoryId) {
+                    await updateFoodById(db, foodId, { name: existingFood.name, description: existingFood.description, category: categoryId });
+                }
+            } else {
+                if (!categoryId) categoryId = 8; 
+                await insertFood(db, { name: safeName, description: '', category: categoryId });
+                const res = await queryFirstAsync(db, 'SELECT last_insert_rowid() AS id');
+                foodId = res.id;
+            }
+
+            if (editingItem.id) {
+                await executeAsync(db, `UPDATE PantryProduct SET food = ?, quantity = ?, warningQuantity = ?, unitOfMeasure = ?, expirationDate = ?, note = ? WHERE id = ?`, 
+                [foodId, qty, warnQty, uomId, expDate, note, editingItem.id]);
+            } else {
+                await executeAsync(db, `INSERT INTO PantryProduct (food, quantity, warningQuantity, unitOfMeasure, expirationDate, note) VALUES (?, ?, ?, ?, ?, ?)`, 
+                [foodId, qty, warnQty, uomId, expDate, note]);
+            }
+            
+            await fetchPantryItems();
+            setEditingItem(null);
+        } catch (error) {
+            console.error("Error saving pantry item:", error);
+            Alert.alert("Errore", "Impossibile salvare il prodotto.");
+        }
     };
 
     const onDateChange = (event, selectedDate) => {
@@ -127,9 +156,15 @@ const PantryScreen = () => {
         return diffDays <= 3;
     };
 
-    const removePantryItem = (id) => {
-        // TODO: DB delete function and then update state
-        setPantryItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    const removePantryItem = async (id) => {
+        if (!db) return;
+        try {
+            await executeAsync(db, `DELETE FROM PantryProduct WHERE id = ?`, [id]);
+            await fetchPantryItems();
+        } catch (error) {
+            console.error("Error deleting item:", error);
+            Alert.alert("Errore", "Impossibile rimuovere il prodotto.");
+        }
     };
 
     const renderItem = ({ item }) => (
@@ -198,12 +233,18 @@ const PantryScreen = () => {
                                     onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
                                 />
                                 <Text style={styles.label}>Categoria</Text>
-                                {/* TODO: Sostituire con un Picker che ottiene le categorie (FoodCategory) dal DB */}
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingItem.category}
-                                    onChangeText={(text) => setEditingItem({ ...editingItem, category: text })}
-                                />
+                                <View style={styles.pickerContainer}>
+                                    <Picker
+                                        selectedValue={editingItem.category}
+                                        onValueChange={(itemValue) => setEditingItem({ ...editingItem, category: itemValue })}
+                                        style={styles.picker}
+                                    >
+                                        <Picker.Item label="Seleziona una categoria..." value="" />
+                                        {categories.map((cat) => (
+                                            <Picker.Item key={cat.id} label={cat.description || cat.name} value={cat.description || cat.name} />
+                                        ))}
+                                    </Picker>
+                                </View>
                                 <Text style={styles.label}>Quantità</Text>
                                 <TextInput
                                     style={styles.input}
@@ -219,12 +260,18 @@ const PantryScreen = () => {
                                     onChangeText={(text) => setEditingItem({ ...editingItem, warningQuantity: text })}
                                 />
                                 <Text style={styles.label}>Unità di misura</Text>
-                                {/* TODO: Sostituire con un Picker che ottiene le unità di misura (UnitOfMeasure) dal DB */}
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingItem.unitOfMeasure}
-                                    onChangeText={(text) => setEditingItem({ ...editingItem, unitOfMeasure: text })}
-                                />
+                                <View style={styles.pickerContainer}>
+                                    <Picker
+                                        selectedValue={editingItem.unitOfMeasure}
+                                        onValueChange={(itemValue) => setEditingItem({ ...editingItem, unitOfMeasure: itemValue })}
+                                        style={styles.picker}
+                                    >
+                                        <Picker.Item label="Seleziona unità di misura..." value="" />
+                                        {units.map((u) => (
+                                            <Picker.Item key={u.id} label={u.symbol} value={u.symbol} />
+                                        ))}
+                                    </Picker>
+                                </View>
                                 <Text style={styles.label}>Scadenza</Text>
                                 <TouchableOpacity onPress={() => setShowDatePicker(true)}>
                                     <View pointerEvents="none">
@@ -370,6 +417,18 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         fontSize: 16,
         backgroundColor: '#f8f9fa',
+    },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: '#c8e6c9',
+        borderRadius: 8,
+        marginBottom: 12,
+        backgroundColor: '#f8f9fa',
+        justifyContent: 'center',
+    },
+    picker: {
+        height: 50,
+        width: '100%',
     },
     modalActions: {
         flexDirection: 'row',

@@ -5,7 +5,7 @@ import { Picker } from '@react-native-picker/picker';
 import { getRecipeCategories, getRecipeDifficulties, getRecipes, insertRecipe, updateRecipeById, removeRecipeById } from '../src/recipe';
 import { getUnitsOfMeasure } from '../src/uom';
 import { getFoods } from '../src/food';
-import { getIngredients, insertIngredient, removeIngredientsByRecipeId } from '../src/ingredient';
+import { getIngredients, insertIngredient, removeIngredientById } from '../src/ingredient';
 
 
 const RecipeScreen = ({ route, db }) => {
@@ -203,7 +203,11 @@ const RecipeScreen = ({ route, db }) => {
 
                 if (recipeId) {
                     await updateRecipeById(db, recipeId, recipeData);
-                    await removeIngredientsByRecipeId(db, recipeId);
+                    const allDbIngredients = await getIngredients(db);
+                    const recipeIngredients = allDbIngredients.filter(ing => ing.recipe === recipeId);
+                    for (const oldIng of recipeIngredients) {
+                        await removeIngredientById(db, oldIng.id);
+                    }
                 } else {
                     recipeId = await insertRecipe(db, recipeData);
                 }

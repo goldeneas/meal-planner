@@ -103,8 +103,8 @@ export async function createTables(db) {
                 GROUP BY P.food, P.unitOfMeasure;
 
         CREATE OR REPLACE VIEW RequiredFoods(food, quantity, unitOfMeasure) AS
-            SELECT S.food, SUM(S.quantity) AS quantity, S.unitOfMeasure FROM ShoppingItem AS S
-                GROUP BY S.food, S.unitOfMeasure;
+            SELECT I.food, SUM(I.quantity) AS quantity, I.unitOfMeasure FROM Ingredient AS I
+                GROUP BY I.food, I.unitOfMeasure;
   `);
 }
 

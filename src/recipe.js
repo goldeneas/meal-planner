@@ -1,4 +1,4 @@
-import { queryAllAsync, queryFirstAsync } from "./database";
+import { executeAsync, queryAllAsync, queryFirstAsync } from "./database";
 
 export async function getRecipeCategories(db) {
     return await queryAllAsync(db, "SELECT * FROM RecipeCategory")
@@ -28,4 +28,42 @@ export async function getRecipeCategoryById(db, id) {
     return await queryFirstAsync(db, `SELECT RC.description FROM Recipe AS R
             JOIN RecipeCategory AS RC ON (R.category = RC.id)
             WHERE R.id = ?`, [id])
+}
+
+export async function insertRecipe(db, recipe) {
+    const params = [recipe.name, recipe.preparationTimeMinutes, recipe.numberOfServings,
+    recipe.description, recipe.difficulty, recipe.category, recipe.note]
+    await executeAsync(db, `INSERT INTO Recipe(
+            name, preparationTimeMinutes, numberOfServings,
+            description, difficulty, category, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`, params)
+}
+
+export async function updateRecipe(db, recipe) {
+    const params = [
+        recipe.name,
+        recipe.preparationTimeMinutes,
+        recipe.numberOfServings,
+        recipe.description,
+        recipe.difficulty,
+        recipe.category,
+        recipe.note,
+        recipe.id
+    ];
+
+    await executeAsync(db, `
+        UPDATE Recipe
+        SET 
+            name = ?, 
+            preparationTimeMinutes = ?, 
+            numberOfServings = ?,
+            description = ?, 
+            difficulty = ?, 
+            category = ?, 
+            note = ?
+        WHERE id = ?`, params);
+}
+
+export async function deleteRecipe(db, id) {
+    await executeAsync(db, `DELETE FROM Recipe WHERE id = ?`, [id]);
 }

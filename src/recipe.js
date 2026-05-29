@@ -64,6 +64,6 @@ export async function updateRecipeById(db, id, recipe) {
         WHERE id = ?`, params);
 }
 
-export async function deleteRecipeById(db, id) {
+export async function removeRecipeById(db, id) {
     await executeAsync(db, `DELETE FROM Recipe WHERE id = ?`, [id]);
 }

@@ -66,7 +66,7 @@ const RecipeScreen = ({ route, db }) => {
             const formattedRecipes = rawRecipes.map(recipe => {
                 const catDesc = cats.find(c => c.id === recipe.category)?.description || '';
                 const diffDesc = diffs.find(d => d.id === recipe.difficulty)?.description || '';
-                
+
                 const recipeIngredients = allIngredients
                     .filter(ing => ing.recipe === recipe.id)
                     .map(ing => ({

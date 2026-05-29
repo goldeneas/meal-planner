@@ -1,25 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Modal, FlatList, Button, Alert} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, FlatList, Button, Alert} from 'react-native';
 
-// TODO: Wait for DB functions and then uncomment these
-// import { getMealByDayOfWeek, insertMeal } from '../src/meal';
-// import { getTimeSlots } from '../src/timeslot';
-// import { getRecipes } from '../src/recipe';
-
-// Dati finti temporanei
-const MOCK_TIME_SLOTS = [
-    { id: 1, name: 'Colazione' },
-    { id: 2, name: 'Pranzo' },
-    { id: 3, name: 'Cena' },
-    { id: 4, name: 'Spuntini' }
-];
-
-const MOCK_RECIPES = [
-    { id: 1, name: 'Pancakes allo Sciroppo', category: 'Dolce' },
-    { id: 2, name: 'Spaghetti al Pomodoro', category: 'Primo' },
-    { id: 3, name: 'Pollo al Forno con Patate', category: 'Secondo' },
-    { id: 4, name: 'Yogurt Greco e Noci', category: 'Spuntino' }
-];
+import { getMealsByDayOfWeek, insertMeal, deleteMealById } from '../src/meal';
+import { getTimeSlots } from '../src/timeslot';
+import { getRecipes } from '../src/recipe';
+import { executeAsync } from '../src/database';
 
 const MealCard = ({ mealName, onPress, onEdit, onDelete }) => (
     <View style={styles.card}>
@@ -69,7 +54,7 @@ const MealSection = ({ title, meals, slotId, recipes, navigation, onAdd, onEdit,
     </View>
 );
 
-export default function PlanScreen({ navigation }) {
+export default function PlanScreen({ navigation, db }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [timeSlots, setTimeSlots] = useState([]);
     const [dayMeals, setDayMeals] = useState({});
@@ -78,19 +63,43 @@ export default function PlanScreen({ navigation }) {
     const [isModalVisible, setModalVisible] = useState(false);
     const [activeSlotForAdd, setActiveSlotForAdd] = useState(null);
     const [editingMealId, setEditingMealId] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
-    // TODO: Sostituire con chiamate reali al DB in futuro
-        setTimeSlots(MOCK_TIME_SLOTS);
-        setRecipes(MOCK_RECIPES);
+        const loadInitialData = async () => {
+            if(!db) return;
+            try {
+                const slots = await getTimeSlots(db);
+                setTimeSlots(slots || []);
+                const allRecipes = await getRecipes(db);
+                setRecipes(allRecipes || []);
+            } catch (error) {
+                console.error("Errore nel caricamento dei dati iniziali:", error);
+            }
+        };
+        loadInitialData();
+    }, [db]);
 
-        setDayMeals({
-            1: [{ id: 'mock1', recipe: 1 }], // Colazione: Pancakes
-            2: [{ id: 'mock2', recipe: 2 }], // Pranzo: Spaghetti
-            3: [],              // Cena: Vuota
-            4: []               // Spuntini: Vuoti
-        });
-    }, []);
+    useEffect(() => {
+        const loadMealsForDay = async () => {
+            if (!db || timeSlots.length === 0) return;
+            try {
+                const jsDay = selectedDate.getDay();
+                const dowId = jsDay === 0 ? 7 : jsDay; 
+                const mealsForToday = await getMealsByDayOfWeek(db, dowId);
+                const organizedMeals = {};
+                timeSlots.forEach(slot => {
+                    organizedMeals[slot.id] = (mealsForToday || []).filter(m => m.timeSlot === slot.id);
+                });
+
+                setDayMeals(organizedMeals);
+            } catch (error) {
+                console.error("Errore nel caricamento dei pasti:", error);
+            }
+        };
+
+        loadMealsForDay();
+    }, [selectedDate, timeSlots, refreshKey, db]);
 
     const handlePrevDay = () => {
         const prev = new Date(selectedDate);
@@ -123,56 +132,50 @@ export default function PlanScreen({ navigation }) {
         Alert.alert(
             "Rimuovi Pasto",
             "Sei sicuro di voler rimuovere questa ricetta dalla pianificazione?",
-            [{ text: "Annulla", style: "cancel" },
-             { text: "Rimuovi", style: "destructive",
-                onPress: () => {
-                    // TODO: In futuro qui chiamerai deleteMeal(db, mealId)
-                    setDayMeals(prevMeals => {
-                        const updatedMeals = { ...prevMeals };
-                        if (updatedMeals[slotId]) {
-                            updatedMeals[slotId] = updatedMeals[slotId].filter(m => m.id !== mealId);
+            [
+                { text: "Annulla", style: "cancel" },
+                { text: "Rimuovi", style: "destructive", 
+                    onPress: async () => {
+                        try {
+                            await deleteMealById(db, mealId);
+                            setRefreshKey(oldKey => oldKey + 1);
+                        } catch (error) {
+                            console.error("Errore cancellazione: ", error);
                         }
-                        return updatedMeals;
-                    });
+                    }
                 }
-            }]
+            ]
         );
     };
 
-    const handleSelectRecipe = (recipeId) => {
-        setDayMeals(prevMeals => {
-            const updatedMeals = { ...prevMeals };
-            if (!updatedMeals[activeSlotForAdd]) {
-                updatedMeals[activeSlotForAdd] = [];
-            }
-
+    const handleSelectRecipe = async (recipeId) => {
+        try {
             if (editingMealId) {
-                // TODO: In futuro chiamerai updateMeal(...)
-                // Modifica: cerchiamo il pasto con l'id salvato e gli cambiamo la ricetta
-                updatedMeals[activeSlotForAdd] = updatedMeals[activeSlotForAdd].map(m => 
-                    m.id === editingMealId ? { ...m, recipe: recipeId } : m
-                );
+                await executeAsync(db, "UPDATE Meal SET recipe = ? WHERE id = ?", [recipeId, editingMealId]);
             } else {
-                // TODO: In futuro chiamerai insertMeal(...)
-                // Inserimento: aggiungiamo un nuovo oggetto con un ID generato al momento
-                updatedMeals[activeSlotForAdd].push({ 
-                    id: Date.now().toString(), 
-                    recipe: recipeId 
-                });
+                const jsDay = selectedDate.getDay();
+                const dowId = jsDay === 0 ? 7 : jsDay; 
+        
+                const newMeal = {
+                    recipe: recipeId,
+                    dayOfWeek: dowId,
+                    timeSlot: activeSlotForAdd
+                };
+                await insertMeal(db, newMeal);
             }
-            return updatedMeals;
-        });
-    
-        // Chiudiamo e resettiamo gli stati del modale
-        setModalVisible(false);
-        setActiveSlotForAdd(null);
-        setEditingMealId(null);
+      
+            setModalVisible(false);
+            setActiveSlotForAdd(null);
+            setEditingMealId(null);
+            setRefreshKey(oldKey => oldKey + 1);
+      
+        } catch (error) {
+            console.error("Errore durante il salvataggio: ", error);
+        }
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.screenTitle}>Pianificazione</Text>
-
+        <View style={styles.container}>
             <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
                 {timeSlots.map((slot) => (
                     <MealSection 
@@ -250,14 +253,13 @@ export default function PlanScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 }
 
 // --- STILI ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#e8f5e9' },
-  screenTitle: { fontSize: 28, fontWeight: 'bold', color: '#1b5e20', paddingHorizontal: 16, paddingTop: 24, textAlign: 'center' },
   scrollArea: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 20 },
   sectionContainer: { marginBottom: 24 },
@@ -287,12 +289,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    width: 36,
-    height: 36,
+    padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f1f8f1',
-    borderRadius: 18
   },
   actionIcon: {
     fontSize: 16,

@@ -39,7 +39,7 @@ export async function insertRecipe(db, recipe) {
         VALUES (?, ?, ?, ?, ?, ?, ?)`, params)
 }
 
-export async function updateRecipe(db, recipe) {
+export async function updateRecipeById(db, id, recipe) {
     const params = [
         recipe.name,
         recipe.preparationTimeMinutes,
@@ -48,7 +48,7 @@ export async function updateRecipe(db, recipe) {
         recipe.difficulty,
         recipe.category,
         recipe.note,
-        recipe.id
+        id
     ];
 
     await executeAsync(db, `
@@ -64,6 +64,6 @@ export async function updateRecipe(db, recipe) {
         WHERE id = ?`, params);
 }
 
-export async function deleteRecipe(db, id) {
+export async function deleteRecipeById(db, id) {
     await executeAsync(db, `DELETE FROM Recipe WHERE id = ?`, [id]);
 }

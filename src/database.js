@@ -97,6 +97,14 @@ export async function createTables(db) {
             FOREIGN KEY (unitOfMeasure) REFERENCES UnitOfMeasure(id) ON DELETE RESTRICT,
             FOREIGN KEY (food) REFERENCES Food(id) ON DELETE RESTRICT
         );
+
+        CREATE OR REPLACE VIEW AvailableFoods(food, quantity, unitOfMeasure) AS
+            SELECT P.food, SUM(P.quantity) AS quantity, P.unitOfMeasure FROM PantryProduct AS P
+                GROUP BY P.food, P.unitOfMeasure;
+
+        CREATE OR REPLACE VIEW RequiredFoods(food, quantity, unitOfMeasure) AS
+            SELECT S.food, SUM(S.quantity) AS quantity, S.unitOfMeasure FROM ShoppingItem AS S
+                GROUP BY S.food, S.unitOfMeasure;
   `);
 }
 

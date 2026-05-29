@@ -33,3 +33,11 @@ export async function setShoppingItemPurchased(db, id, purchased) {
     const isPurchased = typeof purchased === 'boolean' ? (purchased ? 1 : 0) : purchased;
     await executeAsync(db, "UPDATE ShoppingItem SET purchased = ? WHERE id = ?", [isPurchased, id]);
 }
+
+export async function getMissingShoppingItems(db) {
+    return await queryAllAsync(db, `SELECT RF.food, (RF.quantity - COALESCE(AF.quantity, 0)) AS quantity,
+                RF.unitOfMeasure FROM RequiredFoods AS RF
+            LEFT JOIN AvailableFoods AS AF ON (AF.food = RF.food AND AF.unitOfMeasure = RF.unitOfMeasure) 
+            WHERE RF.quantity - COALESCE(AF.quantity, 0) > 0;
+        `)
+}

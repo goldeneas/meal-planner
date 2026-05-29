@@ -37,6 +37,9 @@ export async function insertRecipe(db, recipe) {
             name, preparationTimeMinutes, numberOfServings,
             description, difficulty, category, note)
         VALUES (?, ?, ?, ?, ?, ?, ?)`, params)
+
+    const row = await queryFirstAsync(db, "SELECT last_insert_rowid() AS id");
+    return row?.id;
 }
 
 export async function updateRecipeById(db, id, recipe) {

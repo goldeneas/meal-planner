@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard, Alert } from 'react-native'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatTextHeader from '../components/StatTextHeader';
-import { getShoppingItems, insertShoppingItem, deleteShoppingItem, updateShoppingItemQuantity, setShoppingItemPurchased } from '../src/shopping';
+import { getShoppingItems, insertShoppingItem, deleteShoppingItem, updateShoppingItemQuantity, getMissingShoppingItems, setShoppingItemPurchased } from '../src/shopping';
 import { getFoods, insertFood } from '../src/food';
 
 const ShoppingScreen = ({ db }) => {
@@ -72,6 +72,56 @@ const ShoppingScreen = ({ db }) => {
         Keyboard.dismiss();
         await fetchItems();
     };
+
+
+    const handleAutoGenerate = async () => {
+    if (!db) return;
+    try {
+       
+        const missingItems = await getMissingShoppingItems(db);
+
+        if (!missingItems || missingItems.length === 0) {
+            Alert.alert("Generazione", "La tua dispensa è già al completo in base ai piani!");
+            return;
+        }
+
+        const allFoods = await getFoods(db);
+        
+       
+        const currentShoppingItems = await getShoppingItems(db);
+
+        for (const missing of missingItems) {
+            if (missing.quantity > 0) {
+                const foodDetail = allFoods.find(f => f.id === missing.food);
+                const foodName = foodDetail ? foodDetail.name : `Cibo #${missing.food}`;
+
+             
+                const existingShoppingItem = currentShoppingItems.find(item => item.food === missing.food);
+
+                if (existingShoppingItem) {
+                  
+                    const newTotalQuantity = Number((existingShoppingItem.quantity + missing.quantity).toFixed(1));
+                    await updateShoppingItemQuantity(db, existingShoppingItem.id, newTotalQuantity);
+                } else {
+                   
+                    await insertShoppingItem(db, {
+                        name: foodName,
+                        quantity: missing.quantity,
+                        food: missing.food,
+                        purchaseDate: new Date().toISOString().split('T')[0],
+                        unitOfMeasure: missing.unitOfMeasure
+                    });
+                }
+            }
+        }
+
+        Alert.alert("Successo", "Lista della spesa aggiornata senza duplicati!");
+        await fetchItems();
+    } catch (error) {
+        console.error("Errore generazione:", error);
+        Alert.alert("Errore", "Impossibile generare la spesa.");
+    }
+};
 
     const deleteItem = async (id) => {
         await deleteShoppingItem(db, id);
@@ -161,7 +211,8 @@ const ShoppingScreen = ({ db }) => {
                     ))}
                 </View>
 
-                <TouchableOpacity style={styles.autoGenerateBtn}>
+                
+                <TouchableOpacity style={styles.autoGenerateBtn} onPress={handleAutoGenerate}>
                     <Text style={styles.autoGenerateBtnText}>Generazione automatica</Text>
                 </TouchableOpacity>
             </View>

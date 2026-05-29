@@ -105,7 +105,8 @@ export async function createTables(db) {
 
         DROP VIEW IF EXISTS RequiredFoods;
         CREATE VIEW RequiredFoods(food, quantity, unitOfMeasure) AS
-            SELECT I.food, SUM(I.quantity) AS quantity, I.unitOfMeasure FROM Ingredient AS I
+            SELECT I.food, SUM(I.quantity) AS quantity, I.unitOfMeasure FROM Meal AS M
+                JOIN Ingredient AS I ON (I.recipe = M.recipe)
                 GROUP BY I.food, I.unitOfMeasure;
   `);
 }

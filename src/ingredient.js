@@ -44,3 +44,8 @@ export async function updateIngredientById(db, id, ingredient) {
 export async function removeIngredientById(db, id) {
     await executeAsync(db, "DELETE FROM Ingredient WHERE id = ?", [id]);
 }
+
+export async function insertIngredient(db, ingredient) {
+    const params = [ingredient.quantity, ingredient.recipe, ingredient.unitOfMeasure, ingredient.food]
+    await executeAsync(db, "INSERT INTO Ingredient(quantity, recipe, unitOfMeasure, food) VALUES(?, ?, ?, ?)", params)
+}

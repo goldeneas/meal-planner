@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import StatTextHeader from '../components/StatTextHeader';
 import { getShoppingItems, insertShoppingItem, deleteShoppingItem, updateShoppingItemQuantity, getMissingShoppingItems, setShoppingItemPurchased } from '../src/shopping';
 import { getFoods, insertFood } from '../src/food';
+import { insertPantryItem } from '../src/pantry';
 
 const ShoppingScreen = ({ db }) => {
     const [items, setItems] = useState([]);
@@ -27,7 +28,9 @@ const ShoppingScreen = ({ db }) => {
             quantity: dbItem.quantity,
             unit: dbItem.unitOfMeasure === 2 ? 'ml' : 'g',
             selected: !!dbItem.purchased,
-            category: "Generico"
+            category: "Generico",
+            food: dbItem.food,
+            unitOfMeasure: dbItem.unitOfMeasure
         }));
         setItems(mappedData);
     };
@@ -73,8 +76,7 @@ const ShoppingScreen = ({ db }) => {
         await fetchItems();
     };
 
-
-    const handleAutoGenerate = async () => {
+     const handleAutoGenerate = async () => {
     if (!db) return;
     try {
        
@@ -126,6 +128,40 @@ const ShoppingScreen = ({ db }) => {
     const deleteItem = async (id) => {
         await deleteShoppingItem(db, id);
         await fetchItems();
+    };
+
+    const clearPurchasedItems = async () => {
+        const purchasedItems = items.filter(item => item.selected);
+
+        if (purchasedItems.length === 0) {
+            Alert.alert("Info", "Non ci sono prodotti completati da rimuovere.");
+            return;
+        }
+
+        try {
+            for (const item of purchasedItems) {
+                if (item.food) {
+                    const today = new Date();
+                    today.setDate(today.getDate() + 7);
+                    const defaultExpiryDate = today.toISOString().split('T')[0];
+                    await insertPantryItem(db, {
+                        foodId: item.food,
+                        qty: item.quantity,
+                        warnQty: 1, 
+                        uomId: item.unitOfMeasure || 1,
+                        expDate: defaultExpiryDate,
+                    });
+                }
+            }
+
+            for (const item of purchasedItems) {
+                await deleteShoppingItem(db, item.id);
+            }
+            await fetchItems();
+            Alert.alert("Successo", "Prodotti trasferiti in dispensa e rimossi dalla lista!");
+        } catch (error) {
+            Alert.alert("Errore", "Impossibile completare il trasferimento in dispensa.");
+        }
     };
 
     const updateQuantity = async (id, currentQty, delta) => {
@@ -211,10 +247,15 @@ const ShoppingScreen = ({ db }) => {
                     ))}
                 </View>
 
-                
-                <TouchableOpacity style={styles.autoGenerateBtn} onPress={handleAutoGenerate}>
-                    <Text style={styles.autoGenerateBtnText}>Generazione automatica</Text>
-                </TouchableOpacity>
+                <View style={styles.actionButtonsRow}>
+                    <TouchableOpacity style={[styles.actionBtn, styles.autoGenerateBtn]} onPress={handleAutoGenerate}>
+                        <Text style={styles.autoGenerateBtnText}>Generazione automatica</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[styles.actionBtn, styles.clearBtn]} onPress={clearPurchasedItems}>
+                        <Text style={styles.clearBtnText}>Aggiungi a dispensa</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <FlatList
@@ -248,32 +289,26 @@ const styles = StyleSheet.create({
     unitBtnActive: { backgroundColor: '#2D7A4F', borderColor: '#2D7A4F' },
     unitBtnText: { fontSize: 12, color: '#52A876' },
     unitBtnTextActive: { color: '#fff', fontWeight: 'bold' },
-    autoGenerateBtn: {
-        backgroundColor: '#F0FAF4', borderWidth: 1, borderColor: '#2D7A4F',
-        padding: 12, borderRadius: 12, marginTop: 15, alignItems: 'center'
-    },
-    autoGenerateBtnText: { color: '#2D7A4F', fontWeight: 'bold' },
+    actionButtonsRow: {flexDirection: 'row',gap: 10, marginTop: 15, justifyContent: 'space-between', },
+    actionBtn: { flex: 1,  paddingVertical: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, },
+    autoGenerateBtn: {  backgroundColor: '#F0FAF4',  borderColor: '#2D7A4F', },
+    autoGenerateBtnText: {  color: '#2D7A4F',  fontWeight: 'bold', fontSize: 14,},
+    clearBtn: { backgroundColor: '#F0FAF4',borderColor: '#2D7A4F', },
+    clearBtnText: { color: '#2D7A4F', fontWeight: 'bold', fontSize: 14, },
     list: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 40 },
-    card: {
-        backgroundColor: '#F0FAF4', padding: 12, borderRadius: 16,
-        marginBottom: 10, borderWidth: 1, borderColor: '#C6E8D2',
-        flexDirection: 'row', alignItems: 'center'
-    },
+    card: { backgroundColor: '#F0FAF4', padding: 12, borderRadius: 16,marginBottom: 10, borderWidth: 1, borderColor: '#C6E8D2', flexDirection: 'row', alignItems: 'center' },
     cardSelected: { opacity: 0.5 },
-    cardContent: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+    cardContent: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
     textContainer: { marginLeft: 12 },
     itemName: { fontSize: 16, fontWeight: '600', color: '#1F5C3A' },
     textSelected: { textDecorationLine: 'line-through' },
     itemDetail: { fontSize: 12, color: '#52A876' },
-    quantityControls: { 
-        flexDirection: 'row', alignItems: 'center', 
-        backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#C6E8D2'
-    },
+    quantityControls: {  flexDirection: 'row', alignItems: 'center',  backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#C6E8D2' },
     qtyBtn: { paddingHorizontal: 10, paddingVertical: 5 },
     qtyBtnText: { fontSize: 18, fontWeight: 'bold', color: '#2D7A4F' },
     qtyText: { fontSize: 14, fontWeight: 'bold', color: '#1F5C3A', minWidth: 25, textAlign: 'center' },
     deleteButton: { marginLeft: 10, padding: 5 },
-    deleteButtonText: { color: '#FF6B6B', fontSize: 18, fontWeight: 'bold' },
+    deleteButtonText: { color: '#52A876', fontSize: 18, fontWeight: 'bold' },
     checkboxBase: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#2D7A4F', justifyContent: 'center', alignItems: 'center' },
     checkboxChecked: { backgroundColor: '#2D7A4F' },
     checkmark: { width: 10, height: 5, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: 'white', transform: [{ rotate: '-45deg' }] },

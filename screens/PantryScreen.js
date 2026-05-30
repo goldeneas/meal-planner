@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { queryAllAsync, executeAsync, queryFirstAsync } from '../src/database';
+import { queryFirstAsync } from '../src/database';
 import { getFoodCategories, getFoods, insertFood, updateFoodById } from '../src/food';
 import { getUnitsOfMeasure } from '../src/uom';
+import { deletePantryItem, getPantryItems, insertPantryItem, updatePantryItem } from '../src/pantry';
 
 const PantryScreen = ({ route, db }) => {
     const [pantryItems, setPantryItems] = useState([]);
     const [editingItem, setEditingItem] = useState(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
-    
+
     const [categories, setCategories] = useState([]);
     const [units, setUnits] = useState([]);
 
@@ -35,14 +36,7 @@ const PantryScreen = ({ route, db }) => {
     const fetchPantryItems = async () => {
         if (!db) return;
         try {
-            const rawItems = await queryAllAsync(db, `
-                SELECT P.id, F.name, P.quantity, P.warningQuantity, P.expirationDate, P.note,
-                       FC.description AS category, UOM.symbol AS unitOfMeasure
-                FROM PantryProduct AS P
-                JOIN Food AS F ON P.food = F.id
-                LEFT JOIN FoodCategory AS FC ON F.category = FC.id
-                LEFT JOIN UnitOfMeasure AS UOM ON P.unitOfMeasure = UOM.id
-            `);
+            const rawItems = await getPantryItems(db);
             setPantryItems(rawItems);
         } catch (error) {
             console.error("Error fetching pantry items:", error);
@@ -112,20 +106,18 @@ const PantryScreen = ({ route, db }) => {
                     await updateFoodById(db, foodId, { name: existingFood.name, description: existingFood.description, category: categoryId });
                 }
             } else {
-                if (!categoryId) categoryId = 8; 
+                if (!categoryId) categoryId = 8;
                 await insertFood(db, { name: safeName, description: '', category: categoryId });
                 const res = await queryFirstAsync(db, 'SELECT last_insert_rowid() AS id');
                 foodId = res.id;
             }
 
             if (editingItem.id) {
-                await executeAsync(db, `UPDATE PantryProduct SET food = ?, quantity = ?, warningQuantity = ?, unitOfMeasure = ?, expirationDate = ?, note = ? WHERE id = ?`, 
-                [foodId, qty, warnQty, uomId, expDate, note, editingItem.id]);
+                await updatePantryItem(db, editingItem.id, { foodId, qty, warnQty, uomId, expDate, note })
             } else {
-                await executeAsync(db, `INSERT INTO PantryProduct (food, quantity, warningQuantity, unitOfMeasure, expirationDate, note) VALUES (?, ?, ?, ?, ?, ?)`, 
-                [foodId, qty, warnQty, uomId, expDate, note]);
+                await insertPantryItem(db, { foodId, qty, warnQty, uomId, expDate, note })
             }
-            
+
             await fetchPantryItems();
             setEditingItem(null);
         } catch (error) {
@@ -159,7 +151,7 @@ const PantryScreen = ({ route, db }) => {
     const removePantryItem = async (id) => {
         if (!db) return;
         try {
-            await executeAsync(db, `DELETE FROM PantryProduct WHERE id = ?`, [id]);
+            await deletePantryItem(db, id)
             await fetchPantryItems();
         } catch (error) {
             console.error("Error deleting item:", error);

@@ -33,24 +33,24 @@ const EmptyMealCard = ({ mealType, onAdd }) => (
 const MealSection = ({ title, meals, slotId, recipes, navigation, onAdd, onEdit, onDelete }) => (
     <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>{title}</Text>
-        {meals && meals.length > 0 ? (
-            meals.map((meal) => {
-                const recipeData = recipes.find(r => r.id === meal.recipe);
-                const recipeName = recipeData ? recipeData.name : `Ricetta ID ${meal.recipe}`;
+        {meals && meals.length > 0 && meals.map((meal) => {
+            const recipeData = recipes.find(r => r.id === meal.recipe);
+            const recipeName = recipeData ? recipeData.name : `Ricetta ID ${meal.recipe}`;
         
-                return (
-                    <MealCard 
-                        key={meal.id} 
-                        mealName={recipeName} 
-                        onPress={() => navigation.navigate('Recipes', { openRecipeId: meal.recipe })} 
-                        onEdit={() => onEdit(slotId, meal.id)}
-                        onDelete={() => onDelete(slotId, meal.id)}
-                    />
-                );
-            })
-        ) : (
-            <EmptyMealCard mealType={title ? title.toLowerCase() : 'pasto'} onAdd={() => onAdd(slotId)} />
-        )}
+            return (
+                <MealCard 
+                    key={meal.id} 
+                    mealName={recipeName} 
+                    onPress={() => navigation.navigate('Recipes', { openRecipeId: meal.recipe })} 
+                    onEdit={() => onEdit(slotId, meal.id)}
+                    onDelete={() => onDelete(slotId, meal.id)}
+                />
+            );
+        })}
+        <EmptyMealCard 
+            mealType={meals && meals.length > 0 ? "un altro pasto" : (title ? title.toLowerCase() : 'pasto')} 
+            onAdd={() => onAdd(slotId)} 
+        />
     </View>
 );
 

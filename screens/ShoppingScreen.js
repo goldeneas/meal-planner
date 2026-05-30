@@ -253,7 +253,7 @@ const ShoppingScreen = ({ db }) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity style={[styles.actionBtn, styles.clearBtn]} onPress={clearPurchasedItems}>
-                        <Text style={styles.clearBtnText}>Aggiungi a dispensa</Text>
+                        <Text style={styles.clearBtnText}>Aggiungi alla dispensa</Text>
                     </TouchableOpacity>
                 </View>
             </View>

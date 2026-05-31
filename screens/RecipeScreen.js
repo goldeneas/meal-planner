@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
@@ -12,12 +13,14 @@ const RecipeScreen = ({ route, db }) => {
     const [recipes, setRecipes] = useState([]);
     const [editingRecipe, setEditingRecipe] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
-    useEffect(() => {
-        //Se arriviamo da PlanScreen con un ID, espande automaticamente quella card
-        if (route?.params?.openRecipeId) {
-            setExpandedId(route.params.openRecipeId);
-        }
-    }, [route?.params?.openRecipeId]);
+
+    useFocusEffect(
+        useCallback(() => {
+            //Se arriviamo da PlanScreen con un ID, espande automaticamente quella card
+            if (route?.params?.openRecipeId) {
+                setExpandedId(route.params.openRecipeId);
+            }
+        }, [route?.params?.openRecipeId]));
 
     // Stati per l'aggiunta di ingredienti
     const [foodSearchQuery, setFoodSearchQuery] = useState('');
@@ -31,12 +34,13 @@ const RecipeScreen = ({ route, db }) => {
     const [categories, setCategories] = useState([]);
     const [difficulties, setDifficulties] = useState([]);
 
-    useEffect(() => {
-        if (db) {
-            loadStaticData();
-            fetchRecipes();
-        }
-    }, [db]);
+    useFocusEffect(
+        useCallback(() => {
+            if (db) {
+                loadStaticData();
+                fetchRecipes();
+            }
+        }, [db]));
 
     const loadStaticData = async () => {
         try {

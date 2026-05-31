@@ -4,7 +4,8 @@ import StatCounter from "../components/StatCounter";
 import StatPieChart from "../components/StatPieChart";
 import StatBarChart from "../components/StatBarChart";
 import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes, getMostMealsByCategory, getMostRecipesByCategory, getMostUsedIngredients } from "../src/stats";
-import { useState, useEffect } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
     container: {
@@ -27,46 +28,47 @@ export const StatScreen = ({ navigation, db }) => {
     const [mostUsedIngredients, setMostUsedIngredients] = useState([]);
 
     // carica
-    useEffect(() => {
-        async function loadStats() {
-            const [
-                savedRecipesCount,
-                plannedMealsCount,
-                expiringProductsCount,
-                expiredProductsCount,
-                missingFoodCount,
-                avgRecipePrepTimeMinutes,
-                mui,
-                mmbc,
-                mrbc
-            ] = await Promise.all([
-                countSavedRecipes(db),
-                countPlannedMeals(db),
-                countExpiringProducts(db),
-                countExpiredProducts(db),
-                countMissingFood(db),
-                countAvgRecipePrepTime(db),
-                getMostUsedIngredients(db),
-                getMostMealsByCategory(db),
-                getMostRecipesByCategory(db)
-            ]);
+    useFocusEffect(
+        useCallback(() => {
+            async function loadStats() {
+                const [
+                    savedRecipesCount,
+                    plannedMealsCount,
+                    expiringProductsCount,
+                    expiredProductsCount,
+                    missingFoodCount,
+                    avgRecipePrepTimeMinutes,
+                    mui,
+                    mmbc,
+                    mrbc
+                ] = await Promise.all([
+                    countSavedRecipes(db),
+                    countPlannedMeals(db),
+                    countExpiringProducts(db),
+                    countExpiredProducts(db),
+                    countMissingFood(db),
+                    countAvgRecipePrepTime(db),
+                    getMostUsedIngredients(db),
+                    getMostMealsByCategory(db),
+                    getMostRecipesByCategory(db)
+                ]);
 
-            setMostUsedIngredients(mui)
-            setMostMealsByCategory(mmbc)
-            setMostRecipesByCategory(mrbc)
+                setMostUsedIngredients(mui)
+                setMostMealsByCategory(mmbc)
+                setMostRecipesByCategory(mrbc)
 
-            setCounters([
-                { label: 'Ricette Salvate', value: savedRecipesCount.count },
-                { label: 'Pasti Pianificati', value: plannedMealsCount.count },
-                { label: 'Prodotti in Scadenza', value: expiringProductsCount.count },
-                { label: 'Prodotti Scaduti', value: expiredProductsCount.count },
-                { label: 'Prodotti Mancanti', value: missingFoodCount.count },
-                { label: 'Tempo Medio\ndi Preparazione', value: avgRecipePrepTimeMinutes.count },
-            ]);
-        }
+                setCounters([
+                    { label: 'Ricette Salvate', value: savedRecipesCount.count },
+                    { label: 'Pasti Pianificati', value: plannedMealsCount.count },
+                    { label: 'Prodotti in Scadenza', value: expiringProductsCount.count },
+                    { label: 'Prodotti Scaduti', value: expiredProductsCount.count },
+                    { label: 'Prodotti Mancanti', value: missingFoodCount.count },
+                    { label: 'Tempo Medio\ndi Preparazione', value: avgRecipePrepTimeMinutes.count },
+                ]);
+            }
 
-        loadStats();
-    }, [db]);
+            loadStats();
+        }, [db]));
 
     return (
         <ScrollView style={styles.container}>

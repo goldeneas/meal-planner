@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -15,12 +16,13 @@ const PantryScreen = ({ route, db }) => {
     const [categories, setCategories] = useState([]);
     const [units, setUnits] = useState([]);
 
-    useEffect(() => {
-        if (db) {
-            loadStaticData();
-            fetchPantryItems();
-        }
-    }, [db]);
+    useFocusEffect(
+        useCallback(() => {
+            if (db) {
+                loadStaticData();
+                fetchPantryItems();
+            }
+        }, [db]));
 
     const loadStaticData = async () => {
         try {

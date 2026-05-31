@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, FlatList, Button, Alert } from 'react-native';
 
 import { getMealsByDayOfWeek, insertMeal, deleteMealById } from '../src/meal';
@@ -65,41 +66,43 @@ export default function PlanScreen({ navigation, db }) {
     const [editingMealId, setEditingMealId] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
 
-    useEffect(() => {
-        const loadInitialData = async () => {
-            if (!db) return;
-            try {
-                const slots = await getTimeSlots(db);
-                setTimeSlots(slots || []);
-                const allRecipes = await getRecipes(db);
-                setRecipes(allRecipes || []);
-            } catch (error) {
-                console.error("Errore nel caricamento dei dati iniziali:", error);
-            }
-        };
-        loadInitialData();
-    }, [db]);
+    useFocusEffect(
+        useCallback(() => {
+            const loadInitialData = async () => {
+                if (!db) return;
+                try {
+                    const slots = await getTimeSlots(db);
+                    setTimeSlots(slots || []);
+                    const allRecipes = await getRecipes(db);
+                    setRecipes(allRecipes || []);
+                } catch (error) {
+                    console.error("Errore nel caricamento dei dati iniziali:", error);
+                }
+            };
+            loadInitialData();
+        }, [db]));
 
-    useEffect(() => {
-        const loadMealsForDay = async () => {
-            if (!db || timeSlots.length === 0) return;
-            try {
-                const jsDay = selectedDate.getDay();
-                const dowId = jsDay === 0 ? 7 : jsDay;
-                const mealsForToday = await getMealsByDayOfWeek(db, dowId);
-                const organizedMeals = {};
-                timeSlots.forEach(slot => {
-                    organizedMeals[slot.id] = (mealsForToday || []).filter(m => m.timeSlot === slot.id);
-                });
+    useFocusEffect(
+        useCallback(() => {
+            const loadMealsForDay = async () => {
+                if (!db || timeSlots.length === 0) return;
+                try {
+                    const jsDay = selectedDate.getDay();
+                    const dowId = jsDay === 0 ? 7 : jsDay;
+                    const mealsForToday = await getMealsByDayOfWeek(db, dowId);
+                    const organizedMeals = {};
+                    timeSlots.forEach(slot => {
+                        organizedMeals[slot.id] = (mealsForToday || []).filter(m => m.timeSlot === slot.id);
+                    });
 
-                setDayMeals(organizedMeals);
-            } catch (error) {
-                console.error("Errore nel caricamento dei pasti:", error);
-            }
-        };
+                    setDayMeals(organizedMeals);
+                } catch (error) {
+                    console.error("Errore nel caricamento dei pasti:", error);
+                }
+            };
 
-        loadMealsForDay();
-    }, [selectedDate, timeSlots, refreshKey, db]);
+            loadMealsForDay();
+        }, [selectedDate, timeSlots, refreshKey, db]));
 
     const handlePrevDay = () => {
         const prev = new Date(selectedDate);

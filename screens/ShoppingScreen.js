@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatTextHeader from '../components/StatTextHeader';
@@ -14,11 +15,12 @@ const ShoppingScreen = ({ db }) => {
 
     const units = ['g', 'ml'];
 
-    useEffect(() => {
-        if (db) {
-            fetchItems();
-        }
-    }, [db]);
+    useFocusEffect(
+        useCallback(() => {
+            if (db) {
+                fetchItems();
+            }
+        }, [db]));
 
     const fetchItems = async () => {
         const data = await getShoppingItems(db);

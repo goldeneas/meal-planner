@@ -202,11 +202,11 @@ const PantryScreen = ({ route, db }) => {
                     <Text style={styles.category}>{item.category}</Text>
                 </View>
                 <View style={styles.badgeAndAction}>
-                    <TouchableOpacity style={styles.deleteButton} onPress={() => removePantryItem(item.id)}>
-                        <Text style={styles.actionIcon}>✖</Text>
-                    </TouchableOpacity>
                     <TouchableOpacity style={styles.editButton} onPress={() => handleEditClick(item)}>
                         <Text style={styles.actionIcon}>▲</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => removePantryItem(item.id)}>
+                        <Text style={styles.actionIcon}>✖</Text>
                     </TouchableOpacity>
                 </View>
             </View>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard, Alert } from 'react-native'; 
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatTextHeader from '../components/StatTextHeader';
 import { getShoppingItems, insertShoppingItem, deleteShoppingItem, updateShoppingItemQuantity, getMissingShoppingItems, setShoppingItemPurchased } from '../src/shopping';
@@ -38,7 +38,7 @@ const ShoppingScreen = ({ db }) => {
     const addItem = async () => {
         const productName = newName.trim();
         if (productName.length === 0) return;
-        
+
         let uomId = 1;
         if (newUnit === 'ml') uomId = 2;
 
@@ -54,7 +54,7 @@ const ShoppingScreen = ({ db }) => {
                 description: "Creato da lista spesa",
                 category: 8
             });
-            
+
             const updatedFoods = await getFoods(db);
             const newFood = updatedFoods.find(f => f.name.toLowerCase() === productName.toLowerCase());
             foodId = newFood ? newFood.id : null;
@@ -69,61 +69,61 @@ const ShoppingScreen = ({ db }) => {
         };
 
         await insertShoppingItem(db, newItem);
-        
+
         setNewName('');
         setNewQty('1');
         Keyboard.dismiss();
         await fetchItems();
     };
 
-     const handleAutoGenerate = async () => {
-    if (!db) return;
-    try {
-       
-        const missingItems = await getMissingShoppingItems(db);
+    const handleAutoGenerate = async () => {
+        if (!db) return;
+        try {
 
-        if (!missingItems || missingItems.length === 0) {
-            Alert.alert("Generazione", "La tua dispensa è già al completo in base ai piani!");
-            return;
-        }
+            const missingItems = await getMissingShoppingItems(db);
 
-        const allFoods = await getFoods(db);
-        
-       
-        const currentShoppingItems = await getShoppingItems(db);
+            if (!missingItems || missingItems.length === 0) {
+                Alert.alert("Generazione", "La tua dispensa è già al completo in base ai piani!");
+                return;
+            }
 
-        for (const missing of missingItems) {
-            if (missing.quantity > 0) {
-                const foodDetail = allFoods.find(f => f.id === missing.food);
-                const foodName = foodDetail ? foodDetail.name : `Cibo #${missing.food}`;
+            const allFoods = await getFoods(db);
 
-             
-                const existingShoppingItem = currentShoppingItems.find(item => item.food === missing.food);
 
-                if (existingShoppingItem) {
-                  
-                    const newTotalQuantity = Number((existingShoppingItem.quantity + missing.quantity).toFixed(1));
-                    await updateShoppingItemQuantity(db, existingShoppingItem.id, newTotalQuantity);
-                } else {
-                   
-                    await insertShoppingItem(db, {
-                        name: foodName,
-                        quantity: missing.quantity,
-                        food: missing.food,
-                        purchaseDate: new Date().toISOString().split('T')[0],
-                        unitOfMeasure: missing.unitOfMeasure
-                    });
+            const currentShoppingItems = await getShoppingItems(db);
+
+            for (const missing of missingItems) {
+                if (missing.quantity > 0) {
+                    const foodDetail = allFoods.find(f => f.id === missing.food);
+                    const foodName = foodDetail ? foodDetail.name : `Cibo #${missing.food}`;
+
+
+                    const existingShoppingItem = currentShoppingItems.find(item => item.food === missing.food);
+
+                    if (existingShoppingItem) {
+
+                        const newTotalQuantity = Number((existingShoppingItem.quantity + missing.quantity).toFixed(1));
+                        await updateShoppingItemQuantity(db, existingShoppingItem.id, newTotalQuantity);
+                    } else {
+
+                        await insertShoppingItem(db, {
+                            name: foodName,
+                            quantity: missing.quantity,
+                            food: missing.food,
+                            purchaseDate: new Date().toISOString().split('T')[0],
+                            unitOfMeasure: missing.unitOfMeasure
+                        });
+                    }
                 }
             }
-        }
 
-        Alert.alert("Successo", "Lista della spesa aggiornata senza duplicati!");
-        await fetchItems();
-    } catch (error) {
-        console.error("Errore generazione:", error);
-        Alert.alert("Errore", "Impossibile generare la spesa.");
-    }
-};
+            Alert.alert("Successo", "Lista della spesa aggiornata senza duplicati!");
+            await fetchItems();
+        } catch (error) {
+            console.error("Errore generazione:", error);
+            Alert.alert("Errore", "Impossibile generare la spesa.");
+        }
+    };
 
     const deleteItem = async (id) => {
         await deleteShoppingItem(db, id);
@@ -147,7 +147,7 @@ const ShoppingScreen = ({ db }) => {
                     await insertPantryItem(db, {
                         foodId: item.food,
                         qty: item.quantity,
-                        warnQty: 1, 
+                        warnQty: 1,
                         uomId: item.unitOfMeasure || 1,
                         expDate: defaultExpiryDate,
                     });
@@ -194,7 +194,7 @@ const ShoppingScreen = ({ db }) => {
                     <Text style={styles.itemDetail}>{item.quantity} {item.unit}</Text>
                 </View>
             </TouchableOpacity>
-            
+
             <View style={styles.quantityControls}>
                 <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity, -0.5)} style={styles.qtyBtn}>
                     <Text style={styles.qtyBtnText}>-</Text>
@@ -212,18 +212,18 @@ const ShoppingScreen = ({ db }) => {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.headerPadding}>
-                <StatTextHeader text="Shopping List" />
-                
+                <StatTextHeader text="Inserisci prodotto" />
+
                 <View style={styles.addForm}>
-                    <TextInput 
+                    <TextInput
                         style={[styles.input, { flex: 2 }]}
                         placeholder="Nome prodotto"
                         value={newName}
                         onChangeText={setNewName}
                     />
-                    <TextInput 
+                    <TextInput
                         style={[styles.input, { flex: 0.8 }]}
                         placeholder="Qtà"
                         keyboardType="numeric"
@@ -237,8 +237,8 @@ const ShoppingScreen = ({ db }) => {
 
                 <View style={styles.unitSelector}>
                     {units.map(u => (
-                        <TouchableOpacity 
-                            key={u} 
+                        <TouchableOpacity
+                            key={u}
                             style={[styles.unitBtn, newUnit === u && styles.unitBtnActive]}
                             onPress={() => setNewUnit(u)}
                         >
@@ -249,11 +249,11 @@ const ShoppingScreen = ({ db }) => {
 
                 <View style={styles.actionButtonsRow}>
                     <TouchableOpacity style={[styles.actionBtn, styles.autoGenerateBtn]} onPress={handleAutoGenerate}>
-                        <Text style={styles.autoGenerateBtnText}>Generazione automatica</Text>
+                        <Text style={styles.autoGenerateBtnText}>Genera lista</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={[styles.actionBtn, styles.clearBtn]} onPress={clearPurchasedItems}>
-                        <Text style={styles.clearBtnText}>Aggiungi alla dispensa</Text>
+                        <Text style={styles.clearBtnText}>Inserisci in dispensa</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -264,7 +264,7 @@ const ShoppingScreen = ({ db }) => {
                 keyExtractor={item => item.id.toString()}
                 contentContainerStyle={styles.list}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 
@@ -272,38 +272,38 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     headerPadding: { paddingHorizontal: 20, marginBottom: 10 },
     addForm: { flexDirection: 'row', marginTop: 15, gap: 8 },
-    input: { 
-        backgroundColor: '#F0FAF4', borderRadius: 10, paddingHorizontal: 12, 
-        height: 48, borderWidth: 1, borderColor: '#C6E8D2', color: '#1F5C3A' 
+    input: {
+        backgroundColor: '#F0FAF4', borderRadius: 10, paddingHorizontal: 12,
+        height: 48, borderWidth: 1, borderColor: '#C6E8D2', color: '#1F5C3A'
     },
-    addButton: { 
-        backgroundColor: '#2D7A4F', width: 48, height: 48, 
-        borderRadius: 10, justifyContent: 'center', alignItems: 'center' 
+    addButton: {
+        backgroundColor: '#2D7A4F', width: 48, height: 48,
+        borderRadius: 10, justifyContent: 'center', alignItems: 'center'
     },
     addButtonText: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
     unitSelector: { flexDirection: 'row', gap: 6, marginTop: 10 },
-    unitBtn: { 
-        paddingVertical: 4, paddingHorizontal: 10, borderRadius: 8, 
-        borderWidth: 1, borderColor: '#C6E8D2', backgroundColor: '#fff' 
+    unitBtn: {
+        paddingVertical: 4, paddingHorizontal: 10, borderRadius: 8,
+        borderWidth: 1, borderColor: '#C6E8D2', backgroundColor: '#fff'
     },
     unitBtnActive: { backgroundColor: '#2D7A4F', borderColor: '#2D7A4F' },
     unitBtnText: { fontSize: 12, color: '#52A876' },
     unitBtnTextActive: { color: '#fff', fontWeight: 'bold' },
-    actionButtonsRow: {flexDirection: 'row',gap: 10, marginTop: 15, justifyContent: 'space-between', },
-    actionBtn: { flex: 1,  paddingVertical: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, },
-    autoGenerateBtn: {  backgroundColor: '#F0FAF4',  borderColor: '#2D7A4F', },
-    autoGenerateBtnText: {  color: '#2D7A4F',  fontWeight: 'bold', fontSize: 14,},
-    clearBtn: { backgroundColor: '#F0FAF4',borderColor: '#2D7A4F', },
+    actionButtonsRow: { flexDirection: 'row', gap: 10, marginTop: 15, justifyContent: 'space-between', },
+    actionBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, },
+    autoGenerateBtn: { backgroundColor: '#F0FAF4', borderColor: '#2D7A4F', },
+    autoGenerateBtnText: { color: '#2D7A4F', fontWeight: 'bold', fontSize: 14, },
+    clearBtn: { backgroundColor: '#F0FAF4', borderColor: '#2D7A4F', },
     clearBtnText: { color: '#2D7A4F', fontWeight: 'bold', fontSize: 14, },
     list: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 40 },
-    card: { backgroundColor: '#F0FAF4', padding: 12, borderRadius: 16,marginBottom: 10, borderWidth: 1, borderColor: '#C6E8D2', flexDirection: 'row', alignItems: 'center' },
+    card: { backgroundColor: '#F0FAF4', padding: 12, borderRadius: 16, marginBottom: 10, borderWidth: 1, borderColor: '#C6E8D2', flexDirection: 'row', alignItems: 'center' },
     cardSelected: { opacity: 0.5 },
     cardContent: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
     textContainer: { marginLeft: 12 },
     itemName: { fontSize: 16, fontWeight: '600', color: '#1F5C3A' },
     textSelected: { textDecorationLine: 'line-through' },
     itemDetail: { fontSize: 12, color: '#52A876' },
-    quantityControls: {  flexDirection: 'row', alignItems: 'center',  backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#C6E8D2' },
+    quantityControls: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#C6E8D2' },
     qtyBtn: { paddingHorizontal: 10, paddingVertical: 5 },
     qtyBtnText: { fontSize: 18, fontWeight: 'bold', color: '#2D7A4F' },
     qtyText: { fontSize: 14, fontWeight: 'bold', color: '#1F5C3A', minWidth: 25, textAlign: 'center' },

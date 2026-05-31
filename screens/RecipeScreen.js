@@ -313,7 +313,6 @@ const RecipeScreen = ({ route, db }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.screenTitle}>Ricette</Text>
             <FlatList
                 data={recipes}
                 keyExtractor={(item) => item.id.toString()}
@@ -475,27 +474,26 @@ const RecipeScreen = ({ route, db }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#e8f5e9',
+        backgroundColor: '#fff',
     },
     screenTitle: {
-        fontSize: 28,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#1b5e20',
-        paddingHorizontal: 16,
+        color: '#1c1f1d',
+        paddingHorizontal: 20,
         paddingTop: 24,
-        textAlign: 'center',
+        textAlign: 'left',
     },
     list: {
-        padding: 16,
+        padding: 20,
         gap: 12,
     },
     card: {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#F0FAF4',
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#c8e6c9',
-        elevation: 2,
+        borderColor: '#C6E8D2',
     },
     cardHeader: {
         flexDirection: 'row',
@@ -513,40 +511,40 @@ const styles = StyleSheet.create({
         gap: 8,
         marginBottom: 8,
     },
-    title: { fontSize: 20, fontWeight: 'bold', color: '#1b5e20', marginBottom: 4 },
+    title: { fontSize: 18, fontWeight: 'bold', color: '#1F5C3A', marginBottom: 4 },
     category: {
-        fontSize: 14, color: '#2e7d32', backgroundColor: '#c8e6c9',
-        paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, overflow: 'hidden', alignSelf: 'flex-start'
+        fontSize: 12, color: '#52A876', backgroundColor: '#fff',
+        paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#C6E8D2', overflow: 'hidden', alignSelf: 'flex-start'
     },
     editButton: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
     deleteButton: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
-    actionIcon: { fontSize: 20 },
+    actionIcon: { fontSize: 18, color: '#2D7A4F' },
     detailsContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
     details: { gap: 4, flex: 1 },
-    text: { fontSize: 14, color: '#495057' },
+    text: { fontSize: 14, color: '#52A876' },
     procedureContainer: {
         marginTop: 12,
     },
     procedureTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#2e7d32',
+        color: '#2D7A4F',
         marginBottom: 4,
     },
     procedureStep: {
         fontSize: 14,
-        color: '#495057',
+        color: '#52A876',
         marginBottom: 4,
     },
     expandedContent: {
         marginTop: 16,
         paddingTop: 16,
         borderTopWidth: 1,
-        borderTopColor: '#c8e6c9',
+        borderTopColor: '#C6E8D2',
     },
     expandIcon: {
-        color: '#1b5e20',
-        fontSize: 24,
+        color: '#2D7A4F',
+        fontSize: 20,
         marginLeft: 8,
     },
     ingredientsContainer: {
@@ -556,16 +554,16 @@ const styles = StyleSheet.create({
     ingredientsTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#2e7d32',
+        color: '#2D7A4F',
         marginBottom: 4,
     },
     ingredientText: {
         fontSize: 14,
-        color: '#495057',
+        color: '#52A876',
         marginLeft: 8,
         marginBottom: 2,
     },
-    emptyText: { textAlign: 'center', color: '#868e96', marginTop: 20, fontSize: 16 },
+    emptyText: { textAlign: 'center', color: '#7AB894', marginTop: 20, fontSize: 16 },
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
@@ -574,7 +572,7 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         backgroundColor: 'white',
-        borderRadius: 12,
+        borderRadius: 20,
         padding: 20,
         maxHeight: '85%',
     },
@@ -582,63 +580,66 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 16,
-        color: '#1b5e20',
+        color: '#1F5C3A',
         textAlign: 'center',
     },
-    label: { fontSize: 14, color: '#495057', marginBottom: 4, fontWeight: 'bold' },
+    label: { fontSize: 14, color: '#1F5C3A', marginBottom: 4, fontWeight: 'bold' },
     input: {
-        borderWidth: 1, borderColor: '#c8e6c9', borderRadius: 8,
-        padding: 10, marginBottom: 12, fontSize: 16, backgroundColor: '#f8f9fa',
+        borderWidth: 1, borderColor: '#C6E8D2', borderRadius: 10,
+        padding: 12, marginBottom: 12, fontSize: 16, backgroundColor: '#F0FAF4',
+        color: '#1F5C3A',
     },
     textArea: { height: 100, textAlignVertical: 'top' },
-    modalActions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 },
-    buttonWrapper: { flex: 1, marginHorizontal: 8 },
+    modalActions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, gap: 12 },
+    buttonWrapper: { flex: 1 },
     fab: {
-        position: 'absolute', width: 60, height: 60, alignItems: 'center', justifyContent: 'center',
-        right: 20, bottom: 40, backgroundColor: '#28a745', borderRadius: 30, elevation: 5,
+        position: 'absolute', width: 56, height: 56, alignItems: 'center', justifyContent: 'center',
+        right: 20, bottom: 30, backgroundColor: '#2D7A4F', borderRadius: 28, elevation: 4,
+        shadowColor: '#2D7A4F', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4,
     },
-    fabIcon: { fontSize: 30, color: 'white', fontWeight: 'bold' },
+    fabIcon: { fontSize: 28, color: 'white', fontWeight: 'bold' },
     sectionTitle: {
-        fontSize: 18, fontWeight: 'bold', color: '#1b5e20',
-        marginTop: 16, marginBottom: 8,
+        fontSize: 18, fontWeight: 'bold', color: '#1c1f1d',
+        marginTop: 16, marginBottom: 12,
     },
     addedIngredientsList: { marginBottom: 12 },
     addedIngredientRow: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: '#c8e6c9',
+        paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#C6E8D2',
     },
-    addedIngredientText: { fontSize: 14, color: '#495057', flex: 1 },
+    addedIngredientText: { fontSize: 14, color: '#1F5C3A', flex: 1 },
     removeIngredientText: { color: '#dc3545', fontSize: 18, fontWeight: 'bold', paddingHorizontal: 8 },
     addIngredientContainer: {
-        backgroundColor: '#f1f8f1', padding: 12, borderRadius: 8,
-        marginBottom: 16, borderWidth: 1, borderColor: '#c8e6c9',
+        backgroundColor: '#F0FAF4', padding: 12, borderRadius: 12,
+        marginBottom: 16, borderWidth: 1, borderColor: '#C6E8D2',
     },
     autocompleteContainer: {
-        backgroundColor: 'white', borderWidth: 1, borderColor: '#c8e6c9',
-        borderRadius: 8, maxHeight: 150, marginBottom: 12,
+        backgroundColor: 'white', borderWidth: 1, borderColor: '#C6E8D2',
+        borderRadius: 10, maxHeight: 150, marginBottom: 12,
     },
-    autocompleteItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#f1f8f1' },
-    autocompleteText: { fontSize: 14, color: '#2e7d32' },
+    autocompleteItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#F0FAF4' },
+    autocompleteText: { fontSize: 14, color: '#2D7A4F' },
     ingredientDetailsContainer: { marginTop: 8 },
-    unitSelector: { flexDirection: 'row', marginBottom: 12 },
+    unitSelector: { flexDirection: 'row', marginBottom: 12, gap: 8 },
     unitBtn: {
         paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8,
-        borderWidth: 1, borderColor: '#c8e6c9', backgroundColor: '#fff', marginRight: 8,
+        borderWidth: 1, borderColor: '#C6E8D2', backgroundColor: '#fff',
     },
-    unitBtnActive: { backgroundColor: '#28a745', borderColor: '#28a745' },
-    unitBtnText: { fontSize: 14, color: '#28a745' },
+    unitBtnActive: { backgroundColor: '#2D7A4F', borderColor: '#2D7A4F' },
+    unitBtnText: { fontSize: 14, color: '#2D7A4F' },
     unitBtnTextActive: { color: '#fff', fontWeight: 'bold' },
     pickerContainer: {
         borderWidth: 1,
-        borderColor: '#c8e6c9',
-        borderRadius: 8,
+        borderColor: '#C6E8D2',
+        borderRadius: 10,
         marginBottom: 12,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#F0FAF4',
         justifyContent: 'center',
     },
     picker: {
         height: 50,
         width: '100%',
+        color: '#1F5C3A',
     },
 });
 

@@ -198,7 +198,6 @@ const PantryScreen = ({ route, db }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.screenTitle}>Dispensa</Text>
             <FlatList
                 data={pantryItems}
                 keyExtractor={(item) => item.id.toString()}
@@ -309,33 +308,32 @@ const PantryScreen = ({ route, db }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#e8f5e9',
+        backgroundColor: '#fff',
     },
     screenTitle: {
-        fontSize: 28,
+        fontSize: 22,
         fontWeight: 'bold',
-        color: '#1b5e20',
-        paddingHorizontal: 16,
+        color: '#1c1f1d',
+        paddingHorizontal: 20,
         paddingTop: 24,
-        textAlign: 'center',
+        textAlign: 'left',
     },
     list: {
-        padding: 16,
+        padding: 20,
         gap: 12,
     },
     card: {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#F0FAF4',
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#c8e6c9',
-        elevation: 2,
+        borderColor: '#C6E8D2',
     },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: 16,
+        marginBottom: 12,
     },
     headerLeft: {
         flex: 1,
@@ -346,10 +344,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
     },
-    title: { fontSize: 20, fontWeight: 'bold', color: '#1b5e20', marginBottom: 4 },
+    title: { fontSize: 18, fontWeight: 'bold', color: '#1F5C3A', marginBottom: 4 },
     category: {
-        fontSize: 14, color: '#2e7d32', backgroundColor: '#c8e6c9',
-        paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, overflow: 'hidden', alignSelf: 'flex-start'
+        fontSize: 12, color: '#52A876', backgroundColor: '#fff',
+        paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#C6E8D2', overflow: 'hidden', alignSelf: 'flex-start'
     },
     editButton: {
         width: 36,
@@ -369,13 +367,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     actionIcon: {
-        fontSize: 20,
+        fontSize: 18,
+        color: '#2D7A4F',
     },
     details: { gap: 4, flex: 1 },
-    text: { fontSize: 14, color: '#495057' },
+    text: { fontSize: 14, color: '#52A876' },
     warningText: { color: '#dc3545', fontWeight: 'bold' },
-    note: { fontSize: 14, color: '#868e96', fontStyle: 'italic', marginTop: 4 },
-    emptyText: { textAlign: 'center', color: '#868e96', marginTop: 20, fontSize: 16 },
+    note: { fontSize: 13, color: '#7AB894', fontStyle: 'italic', marginTop: 4 },
+    emptyText: { textAlign: 'center', color: '#7AB894', marginTop: 20, fontSize: 16 },
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
@@ -384,7 +383,7 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         backgroundColor: 'white',
-        borderRadius: 12,
+        borderRadius: 20,
         padding: 20,
         maxHeight: '80%',
     },
@@ -392,59 +391,65 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 16,
-        color: '#1b5e20',
+        color: '#1F5C3A',
         textAlign: 'center',
     },
     label: {
         fontSize: 14,
-        color: '#495057',
+        color: '#1F5C3A',
         marginBottom: 4,
         fontWeight: 'bold',
     },
     input: {
         borderWidth: 1,
-        borderColor: '#c8e6c9',
-        borderRadius: 8,
-        padding: 10,
+        borderColor: '#C6E8D2',
+        borderRadius: 10,
+        padding: 12,
         marginBottom: 12,
         fontSize: 16,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#F0FAF4',
+        color: '#1F5C3A',
     },
     pickerContainer: {
         borderWidth: 1,
-        borderColor: '#c8e6c9',
-        borderRadius: 8,
+        borderColor: '#C6E8D2',
+        borderRadius: 10,
         marginBottom: 12,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#F0FAF4',
         justifyContent: 'center',
     },
     picker: {
         height: 50,
         width: '100%',
+        color: '#1F5C3A',
     },
     modalActions: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 16,
+        gap: 12,
     },
     buttonWrapper: {
         flex: 1,
-        marginHorizontal: 8,
     },
     fab: {
         position: 'absolute',
-        width: 60,
-        height: 60,
+        width: 56,
+        height: 56,
         alignItems: 'center',
         justifyContent: 'center',
         right: 20,
-        bottom: 40,
-        backgroundColor: '#28a745',
-        borderRadius: 30,
-        elevation: 5,
+        bottom: 30,
+        backgroundColor: '#2D7A4F',
+        borderRadius: 28,
+        elevation: 4,
+        shadowColor: '#2D7A4F',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
     },
     fabIcon: {
-        fontSize: 30,
+        fontSize: 28,
         color: 'white',
         fontWeight: 'bold',
     },

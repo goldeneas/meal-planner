@@ -5,29 +5,18 @@ import StatPieChart from "../components/StatPieChart";
 import StatBarChart from "../components/StatBarChart";
 import { countAvgRecipePrepTime, countExpiredProducts, countExpiringProducts, countMissingFood, countPlannedMeals, countSavedRecipes, getMostMealsByCategory, getMostRecipesByCategory, getMostUsedIngredients } from "../src/stats";
 import { useState, useEffect } from "react";
-import { getFoodCategories, getFoods, insertFood } from "../src/food";
-import { getShoppingItems, insertShoppingItem } from "../src/shopping";
-import { getUnitsOfMeasure } from "../src/uom";
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 8,
-        padding: 8,
+        gap: 12,
+        padding: 20,
         justifyContent: "center"
-    },
-    button: {
-        width: '48%',
-        height: 80,
-        backgroundColor: '#4A90E2',
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    label: {
-        color: '#fff',
-        fontWeight: 'bold',
     },
 });
 
@@ -80,18 +69,18 @@ export const StatScreen = ({ navigation, db }) => {
     }, [db]);
 
     return (
-        <ScrollView>
+        <ScrollView style={styles.container}>
             <View style={styles.grid}>
-                <StatTextHeader text={"Panoramica"} />
+                <StatTextHeader text={"Panoramica"} style={{ marginTop: 0 }} />
                 {counters.map((entry, index) => (
                     <StatCounter key={index} counter={entry.value} label={entry.label} />
                 ))}
                 <StatTextHeader text={"Ingredienti Più Usati"} />
                 <StatBarChart series={mostUsedIngredients} />
                 <StatTextHeader text={"Categorie di Pasti Frequenti"} />
-                <StatPieChart widthAndHeight={250} series={mostRecipesByCategory} />
+                <StatPieChart series={mostRecipesByCategory} />
                 <StatTextHeader text={"Ricette per Categoria"} />
-                <StatPieChart widthAndHeight={250} series={mostMealsByCategory} />
+                <StatPieChart series={mostMealsByCategory} />
             </View>
         </ScrollView>
     );

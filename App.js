@@ -40,7 +40,7 @@ const App = () => {
     return (
         <SafeAreaProvider>
             <NavigationContainer>
-                <Tab.Navigator 
+                <Tab.Navigator
                     initialRouteName="Plan"
                     screenOptions={({ route }) => ({
                         tabBarIcon: ({ size }) => {
@@ -52,30 +52,31 @@ const App = () => {
                             else if (route.name === 'Stats') icon = '📊';
                             return <Text style={{ fontSize: size }}>{icon}</Text>;
                         },
-                        tabBarActiveTintColor: '#1b5e20',
+                        tabBarActiveTintColor: '#2D7A4F',
                         tabBarInactiveTintColor: 'gray',
-                        tabBarStyle: { backgroundColor: '#ffffff', paddingBottom: 5, height: 60 },
-                        headerStyle: { backgroundColor: '#e8f5e9' },
-                        headerTitleStyle: { fontWeight: 'bold', color: '#1b5e20' },
+                        tabBarStyle: { backgroundColor: '#ffffff', height: 85, paddingBottom: 10, paddingTop: 10 },
+                        tabBarIconStyle: { marginBottom: 5 },
+                        headerStyle: { backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#C6E8D2' },
+                        headerTitleStyle: { fontWeight: 'bold', color: '#1c1f1d' },
                     })}
                 >
-                    <Tab.Screen name="Plan" options={{ title: 'Pianificazione' }}>
+                    <Tab.Screen name="Plan" options={{ title: 'Piano' }}>
                         {props => <PlanScreen {...props} db={db} />}
                     </Tab.Screen>
-                    
+
                     <Tab.Screen name="Recipes" options={{ title: 'Ricette' }}>
                         {props => <RecipeScreen {...props} db={db} />}
                     </Tab.Screen>
-                    
+
                     <Tab.Screen name="Pantry" options={{ title: 'Dispensa' }}>
                         {props => <PantryScreen {...props} db={db} />}
                     </Tab.Screen>
-                        
-                    <Tab.Screen name="Shopping" options={{ title: 'Lista Spesa' }}>
+
+                    <Tab.Screen name="Shopping" options={{ title: 'Spesa' }}>
                         {props => <ShoppingScreen {...props} db={db} />}
                     </Tab.Screen>
-                    
-                    <Tab.Screen name="Stats" options={{ title: 'Statistiche' }}>
+
+                    <Tab.Screen name="Stats" options={{ title: 'Stats' }}>
                         {props => <StatScreen {...props} db={db} />}
                     </Tab.Screen>
                 </Tab.Navigator>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, FlatList, Button, Alert} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, FlatList, Button, Alert } from 'react-native';
 
 import { getMealsByDayOfWeek, insertMeal, deleteMealById } from '../src/meal';
 import { getTimeSlots } from '../src/timeslot';
@@ -36,20 +36,20 @@ const MealSection = ({ title, meals, slotId, recipes, navigation, onAdd, onEdit,
         {meals && meals.length > 0 && meals.map((meal) => {
             const recipeData = recipes.find(r => r.id === meal.recipe);
             const recipeName = recipeData ? recipeData.name : `Ricetta ID ${meal.recipe}`;
-        
+
             return (
-                <MealCard 
-                    key={meal.id} 
-                    mealName={recipeName} 
-                    onPress={() => navigation.navigate('Recipes', { openRecipeId: meal.recipe })} 
+                <MealCard
+                    key={meal.id}
+                    mealName={recipeName}
+                    onPress={() => navigation.navigate('Recipes', { openRecipeId: meal.recipe })}
                     onEdit={() => onEdit(slotId, meal.id)}
                     onDelete={() => onDelete(slotId, meal.id)}
                 />
             );
         })}
-        <EmptyMealCard 
-            mealType={meals && meals.length > 0 ? "un altro pasto" : (title ? title.toLowerCase() : 'pasto')} 
-            onAdd={() => onAdd(slotId)} 
+        <EmptyMealCard
+            mealType={meals && meals.length > 0 ? "un altro pasto" : (title ? title.toLowerCase() : 'pasto')}
+            onAdd={() => onAdd(slotId)}
         />
     </View>
 );
@@ -59,7 +59,7 @@ export default function PlanScreen({ navigation, db }) {
     const [timeSlots, setTimeSlots] = useState([]);
     const [dayMeals, setDayMeals] = useState({});
     const [recipes, setRecipes] = useState([]);
-  
+
     const [isModalVisible, setModalVisible] = useState(false);
     const [activeSlotForAdd, setActiveSlotForAdd] = useState(null);
     const [editingMealId, setEditingMealId] = useState(null);
@@ -67,7 +67,7 @@ export default function PlanScreen({ navigation, db }) {
 
     useEffect(() => {
         const loadInitialData = async () => {
-            if(!db) return;
+            if (!db) return;
             try {
                 const slots = await getTimeSlots(db);
                 setTimeSlots(slots || []);
@@ -85,7 +85,7 @@ export default function PlanScreen({ navigation, db }) {
             if (!db || timeSlots.length === 0) return;
             try {
                 const jsDay = selectedDate.getDay();
-                const dowId = jsDay === 0 ? 7 : jsDay; 
+                const dowId = jsDay === 0 ? 7 : jsDay;
                 const mealsForToday = await getMealsByDayOfWeek(db, dowId);
                 const organizedMeals = {};
                 timeSlots.forEach(slot => {
@@ -134,7 +134,8 @@ export default function PlanScreen({ navigation, db }) {
             "Sei sicuro di voler rimuovere questa ricetta dalla pianificazione?",
             [
                 { text: "Annulla", style: "cancel" },
-                { text: "Rimuovi", style: "destructive", 
+                {
+                    text: "Rimuovi", style: "destructive",
                     onPress: async () => {
                         try {
                             await deleteMealById(db, mealId);
@@ -154,8 +155,8 @@ export default function PlanScreen({ navigation, db }) {
                 await executeAsync(db, "UPDATE Meal SET recipe = ? WHERE id = ?", [recipeId, editingMealId]);
             } else {
                 const jsDay = selectedDate.getDay();
-                const dowId = jsDay === 0 ? 7 : jsDay; 
-        
+                const dowId = jsDay === 0 ? 7 : jsDay;
+
                 const newMeal = {
                     recipe: recipeId,
                     dayOfWeek: dowId,
@@ -163,12 +164,12 @@ export default function PlanScreen({ navigation, db }) {
                 };
                 await insertMeal(db, newMeal);
             }
-      
+
             setModalVisible(false);
             setActiveSlotForAdd(null);
             setEditingMealId(null);
             setRefreshKey(oldKey => oldKey + 1);
-      
+
         } catch (error) {
             console.error("Errore durante il salvataggio: ", error);
         }
@@ -178,13 +179,13 @@ export default function PlanScreen({ navigation, db }) {
         <View style={styles.container}>
             <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
                 {timeSlots.map((slot) => (
-                    <MealSection 
+                    <MealSection
                         key={slot.id}
                         slotId={slot.id}
-                        title={slot.name} 
-                        meals={dayMeals[slot.id]} 
-                        recipes={recipes} 
-                        navigation={navigation} 
+                        title={slot.name}
+                        meals={dayMeals[slot.id]}
+                        recipes={recipes}
+                        navigation={navigation}
                         onAdd={handleOpenAddModal}
                         onEdit={handleOpenEditModal}
                         onDelete={handleDeleteMeal}
@@ -192,21 +193,21 @@ export default function PlanScreen({ navigation, db }) {
                 ))}
             </ScrollView>
 
-      
+
             <View style={styles.dateSelectorContainer}>
                 {!isToday && (
                     <TouchableOpacity style={styles.todayButton} onPress={() => setSelectedDate(new Date())}>
-                        <Text style={styles.todayButtonText}>Torna a oggi</Text>
+                        <Text style={styles.todayButtonText}>Torna ad oggi</Text>
                     </TouchableOpacity>
                 )}
-        
+
                 <View style={styles.dateRow}>
                     <TouchableOpacity style={styles.arrowButton} onPress={handlePrevDay}>
                         <Text style={styles.arrowText}>{"<"}</Text>
                     </TouchableOpacity>
-          
+
                     <Text style={styles.dateText}>{formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)}</Text>
-          
+
                     <TouchableOpacity style={styles.arrowButton} onPress={handleNextDay}>
                         <Text style={styles.arrowText}>{">"}</Text>
                     </TouchableOpacity>
@@ -219,14 +220,14 @@ export default function PlanScreen({ navigation, db }) {
                         <Text style={styles.modalTitle}>
                             {editingMealId ? "Sostituisci Ricetta" : "Scegli una Ricetta"}
                         </Text>
-            
+
                         {recipes && recipes.length > 0 ? (
                             <FlatList
                                 data={recipes}
                                 keyExtractor={(item) => item.id.toString()}
                                 renderItem={({ item }) => (
-                                    <TouchableOpacity 
-                                        style={styles.recipeListItem} 
+                                    <TouchableOpacity
+                                        style={styles.recipeListItem}
                                         onPress={() => handleSelectRecipe(item.id)}
                                     >
                                         <Text style={styles.recipeListText}>{item.name}</Text>
@@ -235,19 +236,19 @@ export default function PlanScreen({ navigation, db }) {
                                 )}
                                 style={{ maxHeight: 300 }}
                             />
-                            ) : (
-                                <Text style={styles.emptyText}>Nessuna ricetta disponibile. Aggiungine una nella sezione Ricette!</Text>
-                            )}
+                        ) : (
+                            <Text style={styles.emptyText}>Nessuna ricetta disponibile. Aggiungine una nella sezione Ricette!</Text>
+                        )}
 
                         <View style={{ marginTop: 16 }}>
-                            <Button 
-                            title="Annulla" 
-                            onPress={() => {                                        
-                                setModalVisible(false);
-                                setActiveSlotForAdd(null);
-                                setEditingMealId(null);
-                            }} 
-                            color="#dc3545" 
+                            <Button
+                                title="Annulla"
+                                onPress={() => {
+                                    setModalVisible(false);
+                                    setActiveSlotForAdd(null);
+                                    setEditingMealId(null);
+                                }}
+                                color="#dc3545"
                             />
                         </View>
                     </View>
@@ -259,60 +260,94 @@ export default function PlanScreen({ navigation, db }) {
 
 // --- STILI ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#e8f5e9' },
-  scrollArea: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 20 },
-  sectionContainer: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1b5e20', marginBottom: 8 },
-  
-  // Stili Card aggiornati per ospitare i bottoni laterali
-  card: { 
-    backgroundColor: '#ffffff', 
-    padding: 12, 
-    borderRadius: 12, 
-    borderWidth: 1, 
-    borderColor: '#c8e6c9', 
-    elevation: 2, 
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  cardContent: {
-    flex: 1, // Occupa tutto lo spazio a sinistra dei pulsanti
-    justifyContent: 'center',
-    paddingVertical: 4
-  },
-  cardActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionButton: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionIcon: {
-    fontSize: 16,
-  },
-  
-  recipeTitle: { fontSize: 16, fontWeight: '600', color: '#1b5e20' },
-  emptyCard: { borderWidth: 2, borderColor: '#c8e6c9', borderStyle: 'dashed', backgroundColor: 'transparent', padding: 16, borderRadius: 12, marginBottom: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
-  addIcon: { fontSize: 20, color: '#28a745', fontWeight: 'bold', marginRight: 8 },
-  addText: { fontSize: 15, color: '#28a745', fontWeight: '600' },
-  dateSelectorContainer: { backgroundColor: '#ffffff', paddingVertical: 16, paddingHorizontal: 20, borderTopWidth: 1, borderTopColor: '#c8e6c9', alignItems: 'center' },
-  todayButton: { backgroundColor: '#e8f5e9', paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, marginBottom: 12 },
-  todayButtonText: { color: '#2e7d32', fontSize: 12, fontWeight: '600' },
-  dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' },
-  arrowButton: { backgroundColor: '#e8f5e9', width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  arrowText: { fontSize: 18, color: '#1b5e20', fontWeight: 'bold' },
-  dateText: { fontSize: 16, fontWeight: 'bold', color: '#1b5e20' },
-  modalOverlay: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: 20 },
-  modalContent: { backgroundColor: 'white', borderRadius: 12, padding: 20, maxHeight: '85%' },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 16, color: '#1b5e20', textAlign: 'center' },
-  recipeListItem: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#c8e6c9' },
-  recipeListText: { fontSize: 16, color: '#1b5e20', fontWeight: 'bold' },
-  recipeListSubText: { fontSize: 12, color: '#2e7d32', marginTop: 4 },
-  emptyText: { textAlign: 'center', color: '#868e96', marginTop: 20, fontSize: 16, marginBottom: 20 }
+    container: { flex: 1, backgroundColor: '#fff' },
+    scrollArea: { flex: 1 },
+    scrollContent: { padding: 20, paddingBottom: 40 },
+    sectionContainer: { marginBottom: 24 },
+    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1c1f1d', marginBottom: 12 },
+
+    card: {
+        backgroundColor: '#F0FAF4',
+        padding: 14,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#C6E8D2',
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+    },
+    cardContent: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingVertical: 4
+    },
+    cardActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    actionButton: {
+        padding: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    actionIcon: {
+        fontSize: 16,
+        color: '#2D7A4F',
+    },
+
+    recipeTitle: { fontSize: 16, fontWeight: '600', color: '#1F5C3A' },
+    emptyCard: {
+        borderWidth: 1,
+        borderColor: '#C6E8D2',
+        borderStyle: 'dashed',
+        backgroundColor: '#fff',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row'
+    },
+    addIcon: { fontSize: 18, color: '#52A876', fontWeight: 'bold', marginRight: 8 },
+    addText: { fontSize: 14, color: '#52A876', fontWeight: '600' },
+    dateSelectorContainer: {
+        backgroundColor: '#fff',
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#C6E8D2',
+        alignItems: 'center'
+    },
+    todayButton: {
+        backgroundColor: '#F0FAF4',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#C6E8D2'
+    },
+    todayButtonText: { color: '#2D7A4F', fontSize: 13, fontWeight: '600' },
+    dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' },
+    arrowButton: {
+        backgroundColor: '#F0FAF4',
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#C6E8D2'
+    },
+    arrowText: { fontSize: 20, color: '#2D7A4F', fontWeight: 'bold' },
+    dateText: { fontSize: 16, fontWeight: 'bold', color: '#1c1f1d' },
+    modalOverlay: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: 20 },
+    modalContent: { backgroundColor: 'white', borderRadius: 20, padding: 20, maxHeight: '85%' },
+    modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 16, color: '#1F5C3A', textAlign: 'center' },
+    recipeListItem: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F0FAF4' },
+    recipeListText: { fontSize: 16, color: '#1F5C3A', fontWeight: 'bold' },
+    recipeListSubText: { fontSize: 12, color: '#52A876', marginTop: 4 },
+    emptyText: { textAlign: 'center', color: '#7AB894', marginTop: 20, fontSize: 16, marginBottom: 20 }
 });

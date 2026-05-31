@@ -3,7 +3,8 @@ export async function insertDefaultValues(db) {
         await db.execAsync(`
             INSERT OR IGNORE INTO UnitOfMeasure (id, symbol) VALUES 
             (1, 'g'), 
-            (2, 'ml');
+            (2, 'ml'),
+            (3, 'pz');
 
             INSERT OR IGNORE INTO DayOfWeek (id, name) VALUES 
             (1, 'Lunedì'),

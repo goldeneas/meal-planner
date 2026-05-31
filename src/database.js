@@ -78,11 +78,9 @@ export async function createTables(db) {
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             quantity REAL NOT NULL,
-            food INTEGER NOT NULL,
             purchaseDate TEXT,
             unitOfMeasure INTEGER NOT NULL,
             purchased BOOLEAN DEFAULT FALSE,
-            FOREIGN KEY (food) REFERENCES Food(id) ON DELETE RESTRICT,
             FOREIGN KEY (unitOfMeasure) REFERENCES UnitOfMeasure(id) ON DELETE RESTRICT
         );
 

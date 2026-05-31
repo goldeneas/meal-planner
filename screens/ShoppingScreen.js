@@ -44,28 +44,9 @@ const ShoppingScreen = ({ db }) => {
         let uomId = 1;
         if (newUnit === 'ml') uomId = 2;
 
-        let foodId = null;
-        const foods = await getFoods(db);
-        const existingFood = foods.find(f => f.name.toLowerCase() === productName.toLowerCase());
-
-        if (existingFood) {
-            foodId = existingFood.id;
-        } else {
-            await insertFood(db, {
-                name: productName,
-                description: "Creato da lista spesa",
-                category: 8
-            });
-
-            const updatedFoods = await getFoods(db);
-            const newFood = updatedFoods.find(f => f.name.toLowerCase() === productName.toLowerCase());
-            foodId = newFood ? newFood.id : null;
-        }
-
         const newItem = {
             name: productName,
             quantity: parseFloat(newQty) || 1,
-            food: foodId,
             purchaseDate: new Date().toISOString().split('T')[0],
             unitOfMeasure: uomId
         };
@@ -89,29 +70,19 @@ const ShoppingScreen = ({ db }) => {
                 return;
             }
 
-            const allFoods = await getFoods(db);
-
-
             const currentShoppingItems = await getShoppingItems(db);
 
             for (const missing of missingItems) {
                 if (missing.quantity > 0) {
-                    const foodDetail = allFoods.find(f => f.id === missing.food);
-                    const foodName = foodDetail ? foodDetail.name : `Cibo #${missing.food}`;
-
-
-                    const existingShoppingItem = currentShoppingItems.find(item => item.food === missing.food);
-
+                    const foodName = missing.name;
+                    const existingShoppingItem = currentShoppingItems.find(item => item.name === missing.name && item.unitOfMeasure === missing.unitOfMeasure);
                     if (existingShoppingItem) {
-
                         const newTotalQuantity = Number((existingShoppingItem.quantity + missing.quantity).toFixed(1));
                         await updateShoppingItemQuantity(db, existingShoppingItem.id, newTotalQuantity);
                     } else {
-
                         await insertShoppingItem(db, {
                             name: foodName,
                             quantity: missing.quantity,
-                            food: missing.food,
                             purchaseDate: new Date().toISOString().split('T')[0],
                             unitOfMeasure: missing.unitOfMeasure
                         });
@@ -142,23 +113,9 @@ const ShoppingScreen = ({ db }) => {
 
         try {
             for (const item of purchasedItems) {
-                if (item.food) {
-                    const today = new Date();
-                    today.setDate(today.getDate() + 7);
-                    const defaultExpiryDate = today.toISOString().split('T')[0];
-                    await insertPantryItem(db, {
-                        foodId: item.food,
-                        qty: item.quantity,
-                        warnQty: 1,
-                        uomId: item.unitOfMeasure || 1,
-                        expDate: defaultExpiryDate,
-                    });
-                }
-            }
-
-            for (const item of purchasedItems) {
                 await deleteShoppingItem(db, item.id);
             }
+
             await fetchItems();
             Alert.alert("Successo", "Prodotti trasferiti in dispensa e rimossi dalla lista!");
         } catch (error) {
@@ -255,7 +212,7 @@ const ShoppingScreen = ({ db }) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity style={[styles.actionBtn, styles.clearBtn]} onPress={clearPurchasedItems}>
-                        <Text style={styles.clearBtnText}>Inserisci in dispensa</Text>
+                        <Text style={styles.clearBtnText}>Rimuovi comprati</Text>
                     </TouchableOpacity>
                 </View>
             </View>

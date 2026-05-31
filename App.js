@@ -56,7 +56,7 @@ const App = () => {
                             },
                             tabBarActiveTintColor: '#2D7A4F',
                             tabBarInactiveTintColor: 'gray',
-                            tabBarStyle: { backgroundColor: '#ffffff', height: 85, paddingBottom: 10, paddingTop: 10 },
+                            tabBarStyle: { paddingLeft: 10, paddingRight: 10, backgroundColor: '#ffffff', height: 85, paddingBottom: 10, paddingTop: 10 },
                             tabBarIconStyle: { marginBottom: 5 },
                             headerStyle: { backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#C6E8D2' },
                             headerTitleStyle: { fontWeight: 'bold', color: '#1c1f1d' },

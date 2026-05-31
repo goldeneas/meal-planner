@@ -22,6 +22,10 @@ export async function insertMeal(db, meal) {
     await executeAsync(db, query, params);
 }
 
+export async function updateMealRecipeById(db, id, recipeId) {
+    await executeAsync(db, "UPDATE Meal SET recipe = ? WHERE id = ?", [recipeId, id]);
+}
+
 export async function deleteMealByTimeSlotAndDay(db, timeSlotId, dayOfWeekId) {
     await executeAsync(
         db,

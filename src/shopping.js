@@ -6,8 +6,8 @@ export async function getShoppingItems(db) {
 
 export async function insertShoppingItem(db, item) {
     const query = `
-        INSERT INTO ShoppingItem(name, quantity, food, purchaseDate, unitOfMeasure)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO ShoppingItem(name, quantity, purchaseDate, unitOfMeasure)
+        VALUES (?, ?, ?, ?)
     `;
 
     const params = [
@@ -35,9 +35,10 @@ export async function setShoppingItemPurchased(db, id, purchased) {
 }
 
 export async function getMissingShoppingItems(db) {
-    return await queryAllAsync(db, `SELECT RF.food, (RF.quantity - COALESCE(AF.quantity, 0)) AS quantity,
+    return await queryAllAsync(db, `SELECT F.name, RF.food, (RF.quantity - COALESCE(AF.quantity, 0)) AS quantity,
                 RF.unitOfMeasure FROM RequiredFoods AS RF
             LEFT JOIN AvailableFoods AS AF ON (AF.food = RF.food AND AF.unitOfMeasure = RF.unitOfMeasure) 
+            JOIN Food AS F ON (F.id = RF.food)
             WHERE RF.quantity - COALESCE(AF.quantity, 0) > 0;
         `)
 }

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, FlatList, Button, Alert } from 'react-native';
 
-import { getMealsByDayOfWeek, insertMeal, deleteMealById } from '../src/meal';
+import { getMealsByDayOfWeek, insertMeal, deleteMealById, updateMealRecipeById } from '../src/meal';
 import { getTimeSlots } from '../src/timeslot';
 import { getRecipes } from '../src/recipe';
 import { executeAsync } from '../src/database';
@@ -155,7 +155,7 @@ export default function PlanScreen({ navigation, db }) {
     const handleSelectRecipe = async (recipeId) => {
         try {
             if (editingMealId) {
-                await executeAsync(db, "UPDATE Meal SET recipe = ? WHERE id = ?", [recipeId, editingMealId]);
+                await updateMealRecipeById(db, editingMealId, recipeId)
             } else {
                 const jsDay = selectedDate.getDay();
                 const dowId = jsDay === 0 ? 7 : jsDay;

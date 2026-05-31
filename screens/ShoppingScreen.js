@@ -208,7 +208,7 @@ const ShoppingScreen = ({ db }) => {
             </View>
 
             <TouchableOpacity onPress={() => deleteItem(item.id)} style={styles.deleteButton}>
-                <Text style={styles.deleteButtonText}>✕</Text>
+                <Text style={styles.deleteButtonText}>✖</Text>
             </TouchableOpacity>
         </View>
     );

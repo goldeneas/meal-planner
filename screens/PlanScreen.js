@@ -15,10 +15,10 @@ const MealCard = ({ mealName, onPress, onEdit, onDelete }) => (
 
         <View style={styles.cardActions}>
             <TouchableOpacity style={styles.actionButton} onPress={onEdit}>
-                <Text style={styles.actionIcon}>✏️</Text>
+                <Text style={styles.actionIcon}>▲</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.actionButton} onPress={onDelete}>
-                <Text style={styles.actionIcon}>🗑</Text>
+                <Text style={styles.actionIcon}>✖</Text>
             </TouchableOpacity>
         </View>
     </View>
@@ -291,13 +291,12 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     actionButton: {
-        padding: 8,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 8,
     },
     actionIcon: {
-        fontSize: 16,
-        color: '#2D7A4F',
+        fontSize: 18,
     },
 
     recipeTitle: { fontSize: 16, fontWeight: '600', color: '#1F5C3A' },

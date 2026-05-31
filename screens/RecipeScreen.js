@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 
 import { getRecipeCategories, getRecipeDifficulties, getRecipes, insertRecipe, updateRecipeById, removeRecipeById } from '../src/recipe';
 import { getUnitsOfMeasure } from '../src/uom';
@@ -10,9 +10,42 @@ import { getIngredients, insertIngredient, removeIngredientById } from '../src/i
 
 
 const RecipeScreen = ({ route, db }) => {
+    const { showActionSheetWithOptions } = useActionSheet();
     const [recipes, setRecipes] = useState([]);
     const [editingRecipe, setEditingRecipe] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
+
+    const showCategoryActionSheet = () => {
+        const options = categories.map(cat => cat.description);
+        options.push('Annulla');
+        const cancelButtonIndex = options.length - 1;
+
+        showActionSheetWithOptions({
+            options,
+            cancelButtonIndex,
+            title: 'Seleziona Categoria'
+        }, (buttonIndex) => {
+            if (buttonIndex !== cancelButtonIndex) {
+                setEditingRecipe({ ...editingRecipe, category: options[buttonIndex] });
+            }
+        });
+    };
+
+    const showDifficultyActionSheet = () => {
+        const options = difficulties.map(diff => diff.description);
+        options.push('Annulla');
+        const cancelButtonIndex = options.length - 1;
+
+        showActionSheetWithOptions({
+            options,
+            cancelButtonIndex,
+            title: 'Seleziona Difficoltà'
+        }, (buttonIndex) => {
+            if (buttonIndex !== cancelButtonIndex) {
+                setEditingRecipe({ ...editingRecipe, difficulty: options[buttonIndex] });
+            }
+        });
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -268,23 +301,18 @@ const RecipeScreen = ({ route, db }) => {
                         <Text style={styles.category}>{item.category}</Text>
                     </View>
                     <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => removeRecipe(item.id)}>
+                        <Text style={styles.expandIcon}>✖</Text>
+                    </TouchableOpacity>
                 </TouchableOpacity>
 
                 {isExpanded && (
                     <View style={styles.expandedContent}>
-                        <View style={styles.badgeAndAction}>
-                            <TouchableOpacity style={styles.deleteButton} onPress={() => removeRecipe(item.id)}>
-                                <Text style={styles.actionIcon}>🗑</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.editButton} onPress={() => handleEditClick(item)}>
-                                <Text style={styles.actionIcon}>✏️</Text>
-                            </TouchableOpacity>
-                        </View>
                         <View style={styles.detailsContainer}>
                             <View style={styles.details}>
-                                <Text style={styles.text}>⏱ Tempo: {item.preparationTimeMinutes} min</Text>
-                                <Text style={styles.text}>🍽 Porzioni: {item.numberOfServings}</Text>
-                                <Text style={styles.text}>📈 Difficoltà: {item.difficulty}</Text>
+                                <Text style={styles.boldInfo}> Tempo: {item.preparationTimeMinutes} min</Text>
+                                <Text style={styles.boldInfo}> Porzioni: {item.numberOfServings}</Text>
+                                <Text style={styles.boldInfo}> Difficoltà: {item.difficulty}</Text>
 
                                 {item.ingredients && item.ingredients.length > 0 && (
                                     <View style={styles.ingredientsContainer}>
@@ -307,6 +335,10 @@ const RecipeScreen = ({ route, db }) => {
                                         ))}
                                     </View>
                                 ) : null}
+
+                                <TouchableOpacity style={styles.editButton} onPress={() => handleEditClick(item)}>
+                                    <Text style={styles.editText}>Modifica</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>
@@ -343,36 +375,18 @@ const RecipeScreen = ({ route, db }) => {
                                 />
 
                                 <Text style={styles.label}>Categoria</Text>
-                                <View style={styles.pickerContainer}>
-                                    <Picker
-                                        selectedValue={editingRecipe.category}
-                                        onValueChange={(itemValue) =>
-                                            setEditingRecipe({ ...editingRecipe, category: itemValue })
-                                        }
-                                        style={styles.picker}
-                                    >
-                                        <Picker.Item label="Seleziona una categoria..." value="" />
-                                        {categories.map((cat) => (
-                                            <Picker.Item key={cat.id} label={cat.description} value={cat.description} />
-                                        ))}
-                                    </Picker>
-                                </View>
+                                <TouchableOpacity style={styles.pickerContainer} onPress={showCategoryActionSheet}>
+                                    <Text style={[styles.pickerText, !editingRecipe.category && styles.pickerPlaceholder]}>
+                                        {editingRecipe.category || "Seleziona una categoria..."}
+                                    </Text>
+                                </TouchableOpacity>
 
                                 <Text style={styles.label}>Difficoltà</Text>
-                                <View style={styles.pickerContainer}>
-                                    <Picker
-                                        selectedValue={editingRecipe.difficulty}
-                                        onValueChange={(itemValue) =>
-                                            setEditingRecipe({ ...editingRecipe, difficulty: itemValue })
-                                        }
-                                        style={styles.picker}
-                                    >
-                                        <Picker.Item label="Seleziona una difficoltà..." value="" />
-                                        {difficulties.map((diff) => (
-                                            <Picker.Item key={diff.id} label={diff.description} value={diff.description} />
-                                        ))}
-                                    </Picker>
-                                </View>
+                                <TouchableOpacity style={styles.pickerContainer} onPress={showDifficultyActionSheet}>
+                                    <Text style={[styles.pickerText, !editingRecipe.difficulty && styles.pickerPlaceholder]}>
+                                        {editingRecipe.difficulty || "Seleziona una difficoltà..."}
+                                    </Text>
+                                </TouchableOpacity>
 
                                 <Text style={styles.label}>Tempo di Preparazione (minuti)</Text>
                                 <TextInput
@@ -520,7 +534,7 @@ const styles = StyleSheet.create({
         fontSize: 12, color: '#52A876', backgroundColor: '#fff',
         paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#C6E8D2', overflow: 'hidden', alignSelf: 'flex-start'
     },
-    editButton: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
+    editButton: { justifyContent: 'center', alignItems: 'center' },
     deleteButton: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
     actionIcon: { fontSize: 18, color: '#2D7A4F' },
     detailsContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
@@ -535,6 +549,11 @@ const styles = StyleSheet.create({
         color: '#2D7A4F',
         marginBottom: 4,
     },
+    boldInfo: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#2D7A4F',
+    },
     procedureStep: {
         fontSize: 14,
         color: '#52A876',
@@ -547,9 +566,15 @@ const styles = StyleSheet.create({
         borderTopColor: '#C6E8D2',
     },
     expandIcon: {
-        color: '#2D7A4F',
-        fontSize: 20,
+        fontSize: 18,
         marginLeft: 8,
+    },
+    editText: {
+        fontSize: 16,
+        marginLeft: 8,
+        marginTop: 18,
+        color: '#2D7A4F',
+        fontWeight: 'bold',
     },
     ingredientsContainer: {
         marginTop: 12,
@@ -639,11 +664,15 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         backgroundColor: '#F0FAF4',
         justifyContent: 'center',
-    },
-    picker: {
         height: 50,
-        width: '100%',
+        paddingHorizontal: 12,
+    },
+    pickerText: {
+        fontSize: 16,
         color: '#1F5C3A',
+    },
+    pickerPlaceholder: {
+        color: '#7AB894',
     },
 });
 

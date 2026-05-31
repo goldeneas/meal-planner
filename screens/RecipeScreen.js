@@ -1,51 +1,44 @@
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
-import { useActionSheet } from '@expo/react-native-action-sheet';
+import { useActionSheet, ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 import { getRecipeCategories, getRecipeDifficulties, getRecipes, insertRecipe, updateRecipeById, removeRecipeById } from '../src/recipe';
 import { getUnitsOfMeasure } from '../src/uom';
 import { getFoods } from '../src/food';
 import { getIngredients, insertIngredient, removeIngredientById } from '../src/ingredient';
 
+const ActionSheetPicker = ({ title, options, value, placeholder, onSelect }) => {
+    const { showActionSheetWithOptions } = useActionSheet();
+
+    const showPicker = () => {
+        const actionOptions = [...options, 'Annulla'];
+        const cancelButtonIndex = actionOptions.length - 1;
+
+        showActionSheetWithOptions({
+            options: actionOptions,
+            cancelButtonIndex,
+            title
+        }, (buttonIndex) => {
+            if (buttonIndex !== cancelButtonIndex) {
+                onSelect(actionOptions[buttonIndex]);
+            }
+        });
+    };
+
+    return (
+        <TouchableOpacity style={styles.pickerContainer} onPress={showPicker}>
+            <Text style={[styles.pickerText, !value && styles.pickerPlaceholder]}>
+                {value || placeholder}
+            </Text>
+        </TouchableOpacity>
+    );
+};
 
 const RecipeScreen = ({ route, db }) => {
-    const { showActionSheetWithOptions } = useActionSheet();
     const [recipes, setRecipes] = useState([]);
     const [editingRecipe, setEditingRecipe] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
-
-    const showCategoryActionSheet = () => {
-        const options = categories.map(cat => cat.description);
-        options.push('Annulla');
-        const cancelButtonIndex = options.length - 1;
-
-        showActionSheetWithOptions({
-            options,
-            cancelButtonIndex,
-            title: 'Seleziona Categoria'
-        }, (buttonIndex) => {
-            if (buttonIndex !== cancelButtonIndex) {
-                setEditingRecipe({ ...editingRecipe, category: options[buttonIndex] });
-            }
-        });
-    };
-
-    const showDifficultyActionSheet = () => {
-        const options = difficulties.map(diff => diff.description);
-        options.push('Annulla');
-        const cancelButtonIndex = options.length - 1;
-
-        showActionSheetWithOptions({
-            options,
-            cancelButtonIndex,
-            title: 'Seleziona Difficoltà'
-        }, (buttonIndex) => {
-            if (buttonIndex !== cancelButtonIndex) {
-                setEditingRecipe({ ...editingRecipe, difficulty: options[buttonIndex] });
-            }
-        });
-    };
 
     useFocusEffect(
         useCallback(() => {
@@ -362,6 +355,7 @@ const RecipeScreen = ({ route, db }) => {
             </TouchableOpacity>
 
             <Modal visible={!!editingRecipe} animationType="slide" transparent={true}>
+                <ActionSheetProvider>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>{editingRecipe?.id ? 'Modifica Ricetta' : 'Nuova Ricetta'}</Text>
@@ -375,18 +369,22 @@ const RecipeScreen = ({ route, db }) => {
                                 />
 
                                 <Text style={styles.label}>Categoria</Text>
-                                <TouchableOpacity style={styles.pickerContainer} onPress={showCategoryActionSheet}>
-                                    <Text style={[styles.pickerText, !editingRecipe.category && styles.pickerPlaceholder]}>
-                                        {editingRecipe.category || "Seleziona una categoria..."}
-                                    </Text>
-                                </TouchableOpacity>
+                                <ActionSheetPicker
+                                    title="Seleziona Categoria"
+                                    options={categories.map(cat => cat.description)}
+                                    value={editingRecipe.category}
+                                    placeholder="Seleziona una categoria..."
+                                    onSelect={(val) => setEditingRecipe({ ...editingRecipe, category: val })}
+                                />
 
                                 <Text style={styles.label}>Difficoltà</Text>
-                                <TouchableOpacity style={styles.pickerContainer} onPress={showDifficultyActionSheet}>
-                                    <Text style={[styles.pickerText, !editingRecipe.difficulty && styles.pickerPlaceholder]}>
-                                        {editingRecipe.difficulty || "Seleziona una difficoltà..."}
-                                    </Text>
-                                </TouchableOpacity>
+                                <ActionSheetPicker
+                                    title="Seleziona Difficoltà"
+                                    options={difficulties.map(diff => diff.description)}
+                                    value={editingRecipe.difficulty}
+                                    placeholder="Seleziona una difficoltà..."
+                                    onSelect={(val) => setEditingRecipe({ ...editingRecipe, difficulty: val })}
+                                />
 
                                 <Text style={styles.label}>Tempo di Preparazione (minuti)</Text>
                                 <TextInput
@@ -484,6 +482,7 @@ const RecipeScreen = ({ route, db }) => {
                         )}
                     </View>
                 </View>
+                </ActionSheetProvider>
             </Modal>
         </View>
     );

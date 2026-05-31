@@ -2,52 +2,46 @@ import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useActionSheet } from '@expo/react-native-action-sheet';
+import { useActionSheet, ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { queryFirstAsync } from '../src/database';
 import { getFoodCategories, getFoods, insertFood, updateFoodById } from '../src/food';
 import { getUnitsOfMeasure } from '../src/uom';
 import { deletePantryItem, getPantryItems, insertPantryItem, updatePantryItem } from '../src/pantry';
 
-const PantryScreen = ({ route, db }) => {
+const ActionSheetPicker = ({ title, options, value, placeholder, onSelect }) => {
     const { showActionSheetWithOptions } = useActionSheet();
+
+    const showPicker = () => {
+        const actionOptions = [...options, 'Annulla'];
+        const cancelButtonIndex = actionOptions.length - 1;
+
+        showActionSheetWithOptions({
+            options: actionOptions,
+            cancelButtonIndex,
+            title
+        }, (buttonIndex) => {
+            if (buttonIndex !== cancelButtonIndex) {
+                onSelect(actionOptions[buttonIndex]);
+            }
+        });
+    };
+
+    return (
+        <TouchableOpacity style={styles.pickerContainer} onPress={showPicker}>
+            <Text style={[styles.pickerText, !value && styles.pickerPlaceholder]}>
+                {value || placeholder}
+            </Text>
+        </TouchableOpacity>
+    );
+};
+
+const PantryScreen = ({ route, db }) => {
     const [pantryItems, setPantryItems] = useState([]);
     const [editingItem, setEditingItem] = useState(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
 
     const [categories, setCategories] = useState([]);
     const [units, setUnits] = useState([]);
-
-    const showCategoryActionSheet = () => {
-        const options = categories.map(cat => cat.description || cat.name);
-        options.push('Annulla');
-        const cancelButtonIndex = options.length - 1;
-
-        showActionSheetWithOptions({
-            options,
-            cancelButtonIndex,
-            title: 'Seleziona Categoria'
-        }, (buttonIndex) => {
-            if (buttonIndex !== cancelButtonIndex) {
-                setEditingItem({ ...editingItem, category: options[buttonIndex] });
-            }
-        });
-    };
-
-    const showUomActionSheet = () => {
-        const options = units.map(u => u.symbol);
-        options.push('Annulla');
-        const cancelButtonIndex = options.length - 1;
-
-        showActionSheetWithOptions({
-            options,
-            cancelButtonIndex,
-            title: 'Seleziona Unità di Misura'
-        }, (buttonIndex) => {
-            if (buttonIndex !== cancelButtonIndex) {
-                setEditingItem({ ...editingItem, unitOfMeasure: options[buttonIndex] });
-            }
-        });
-    };
 
     useFocusEffect(
         useCallback(() => {
@@ -247,6 +241,7 @@ const PantryScreen = ({ route, db }) => {
 
 
             <Modal visible={!!editingItem} animationType="slide" transparent={true}>
+                <ActionSheetProvider>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>{editingItem?.id ? 'Modifica Prodotto' : 'Nuovo Prodotto'}</Text>
@@ -259,11 +254,13 @@ const PantryScreen = ({ route, db }) => {
                                     onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
                                 />
                                 <Text style={styles.label}>Categoria</Text>
-                                <TouchableOpacity style={styles.pickerContainer} onPress={showCategoryActionSheet}>
-                                    <Text style={[styles.pickerText, !editingItem.category && styles.pickerPlaceholder]}>
-                                        {editingItem.category || "Seleziona una categoria..."}
-                                    </Text>
-                                </TouchableOpacity>
+                                <ActionSheetPicker
+                                    title="Seleziona Categoria"
+                                    options={categories.map(cat => cat.description || cat.name)}
+                                    value={editingItem.category}
+                                    placeholder="Seleziona una categoria..."
+                                    onSelect={(val) => setEditingItem({ ...editingItem, category: val })}
+                                />
                                 <Text style={styles.label}>Quantità</Text>
                                 <TextInput
                                     style={styles.input}
@@ -279,11 +276,13 @@ const PantryScreen = ({ route, db }) => {
                                     onChangeText={(text) => setEditingItem({ ...editingItem, warningQuantity: text })}
                                 />
                                 <Text style={styles.label}>Unità di misura</Text>
-                                <TouchableOpacity style={styles.pickerContainer} onPress={showUomActionSheet}>
-                                    <Text style={[styles.pickerText, !editingItem.unitOfMeasure && styles.pickerPlaceholder]}>
-                                        {editingItem.unitOfMeasure || "Seleziona unità di misura..."}
-                                    </Text>
-                                </TouchableOpacity>
+                                <ActionSheetPicker
+                                    title="Seleziona Unità di Misura"
+                                    options={units.map(u => u.symbol)}
+                                    value={editingItem.unitOfMeasure}
+                                    placeholder="Seleziona unità di misura..."
+                                    onSelect={(val) => setEditingItem({ ...editingItem, unitOfMeasure: val })}
+                                />
                                 <Text style={styles.label}>Scadenza</Text>
                                 <TouchableOpacity onPress={() => setShowDatePicker(true)}>
                                     <View pointerEvents="none">
@@ -321,6 +320,7 @@ const PantryScreen = ({ route, db }) => {
                         )}
                     </View>
                 </View>
+                </ActionSheetProvider>
             </Modal>
         </View>
     );

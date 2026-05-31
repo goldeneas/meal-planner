@@ -4,9 +4,6 @@ export async function getUnitsOfMeasure(db) {
     return await queryAllAsync(db, "SELECT * FROM UnitOfMeasure");
 }
 
-export async function getUnitOfMeasureSymbols(db) {
-    return await queryAllAsync(db, "SELECT symbol FROM UnitOfMeasure");
-}
 
 export async function getUnitOfMeasureIdBySymbol(db, symbol) {
     const res = await queryFirstAsync(db, "SELECT id FROM UnitOfMeasure WHERE symbol = ?", [symbol])

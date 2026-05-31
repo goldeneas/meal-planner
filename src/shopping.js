@@ -13,7 +13,6 @@ export async function insertShoppingItem(db, item) {
     const params = [
         item.name,
         item.quantity,
-        item.food,
         item.purchaseDate,
         item.unitOfMeasure
     ];

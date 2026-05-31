@@ -12,7 +12,7 @@ const ShoppingScreen = ({ db }) => {
     const [items, setItems] = useState([]);
     const [newName, setNewName] = useState('');
     const [newQty, setNewQty] = useState('1');
-    const [newUnit, setNewUnit] = useState('g');
+    const [newUnit, setNewUnit] = useState(1);
     const [units, setUnits] = useState([]);
 
     useFocusEffect(
@@ -23,35 +23,32 @@ const ShoppingScreen = ({ db }) => {
         }, [db]));
 
     const fetchItems = async () => {
+        const us = await getUnitOfMeasureSymbols(db);
+        setUnits(us);
+
         const data = await getShoppingItems(db);
         const mappedData = data.map(dbItem => ({
             id: dbItem.id,
             name: dbItem.name,
             quantity: dbItem.quantity,
-            unit: dbItem.unitOfMeasure === 2 ? 'ml' : 'g',
+            unit: us[dbItem.unitOfMeasure - 1] || 'g',
             selected: !!dbItem.purchased,
             category: "Generico",
             food: dbItem.food,
             unitOfMeasure: dbItem.unitOfMeasure
         }));
         setItems(mappedData);
-
-        const us = await getUnitOfMeasureSymbols(db)
-        setUnits(us)
     };
 
     const addItem = async () => {
         const productName = newName.trim();
         if (productName.length === 0) return;
 
-        let uomId = 1;
-        if (newUnit === 'ml') uomId = 2;
-
         const newItem = {
             name: productName,
             quantity: parseFloat(newQty) || 1,
             purchaseDate: new Date().toISOString().split('T')[0],
-            unitOfMeasure: uomId
+            unitOfMeasure: newUnit
         };
 
         await insertShoppingItem(db, newItem);
@@ -120,9 +117,9 @@ const ShoppingScreen = ({ db }) => {
             }
 
             await fetchItems();
-            Alert.alert("Successo", "Prodotti trasferiti in dispensa e rimossi dalla lista!");
+            Alert.alert("Successo", "Prodotti rimossi dalla lista!");
         } catch (error) {
-            Alert.alert("Errore", "Impossibile completare il trasferimento in dispensa.");
+            Alert.alert("Errore", "Impossibile completare l'operazione.");
         }
     };
 
@@ -198,15 +195,15 @@ const ShoppingScreen = ({ db }) => {
                 </View>
 
                 <View style={styles.unitSelector}>
-                    {units.map(u => (
-                        <TouchableOpacity
-                            key={u}
-                            style={[styles.unitBtn, newUnit === u && styles.unitBtnActive]}
-                            onPress={() => setNewUnit(u)}
-                        >
-                            <Text style={[styles.unitBtnText, newUnit === u && styles.unitBtnTextActive]}>{u}</Text>
-                        </TouchableOpacity>
-                    ))}
+                    {units.map((u, index) => {
+                        const currentId = index + 1;
+                        return (
+                            <TouchableOpacity key={u} style={[styles.unitBtn, newUnit === currentId && styles.unitBtnActive]}onPress={() => setNewUnit(currentId)}
+                            >
+                                <Text style={[styles.unitBtnText, newUnit === currentId && styles.unitBtnTextActive]}>{u}</Text>
+                            </TouchableOpacity>
+                        );
+                    })}
                 </View>
 
                 <View style={styles.actionButtonsRow}>
@@ -251,12 +248,12 @@ const styles = StyleSheet.create({
     unitBtnActive: { backgroundColor: '#2D7A4F', borderColor: '#2D7A4F' },
     unitBtnText: { fontSize: 12, color: '#52A876' },
     unitBtnTextActive: { color: '#fff', fontWeight: 'bold' },
-    actionButtonsRow: { flexDirection: 'row', gap: 10, marginTop: 15, justifyContent: 'space-between', },
-    actionBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, },
-    autoGenerateBtn: { backgroundColor: '#F0FAF4', borderColor: '#2D7A4F', },
-    autoGenerateBtnText: { color: '#2D7A4F', fontWeight: 'bold', fontSize: 14, },
-    clearBtn: { backgroundColor: '#F0FAF4', borderColor: '#2D7A4F', },
-    clearBtnText: { color: '#2D7A4F', fontWeight: 'bold', fontSize: 14, },
+    actionButtonsRow: { flexDirection: 'row', gap: 10, marginTop: 15, justifyContent: 'space-between' },
+    actionBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+    autoGenerateBtn: { backgroundColor: '#F0FAF4', borderColor: '#2D7A4F' },
+    autoGenerateBtnText: { color: '#2D7A4F', fontWeight: 'bold', fontSize: 14 },
+    clearBtn: { backgroundColor: '#F0FAF4', borderColor: '#2D7A4F' },
+    clearBtnText: { color: '#2D7A4F', fontWeight: 'bold', fontSize: 14 },
     list: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 40 },
     card: { backgroundColor: '#F0FAF4', padding: 12, borderRadius: 16, marginBottom: 10, borderWidth: 1, borderColor: '#C6E8D2', flexDirection: 'row', alignItems: 'center' },
     cardSelected: { opacity: 0.5 },
@@ -273,7 +270,7 @@ const styles = StyleSheet.create({
     deleteButtonText: { color: '#52A876', fontSize: 18, fontWeight: 'bold' },
     checkboxBase: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#2D7A4F', justifyContent: 'center', alignItems: 'center' },
     checkboxChecked: { backgroundColor: '#2D7A4F' },
-    checkmark: { width: 10, height: 5, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: 'white', transform: [{ rotate: '-45deg' }] },
+    checkmark: { width: 10, height: 5, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: 'white', transform: [{ rotate: '-45deg' }] }
 });
 
 export default ShoppingScreen;

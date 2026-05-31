@@ -6,14 +6,14 @@ import StatTextHeader from '../components/StatTextHeader';
 import { getShoppingItems, insertShoppingItem, deleteShoppingItem, updateShoppingItemQuantity, getMissingShoppingItems, setShoppingItemPurchased } from '../src/shopping';
 import { getFoods, insertFood } from '../src/food';
 import { insertPantryItem } from '../src/pantry';
+import { getUnitOfMeasureSymbols } from '../src/uom';
 
 const ShoppingScreen = ({ db }) => {
     const [items, setItems] = useState([]);
     const [newName, setNewName] = useState('');
     const [newQty, setNewQty] = useState('1');
     const [newUnit, setNewUnit] = useState('g');
-
-    const units = ['g', 'ml'];
+    const [units, setUnits] = useState([]);
 
     useFocusEffect(
         useCallback(() => {
@@ -35,6 +35,9 @@ const ShoppingScreen = ({ db }) => {
             unitOfMeasure: dbItem.unitOfMeasure
         }));
         setItems(mappedData);
+
+        const us = await getUnitOfMeasureSymbols(db)
+        setUnits(us)
     };
 
     const addItem = async () => {

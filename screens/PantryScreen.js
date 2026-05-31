@@ -43,6 +43,8 @@ const PantryScreen = ({ route, db }) => {
     const [categories, setCategories] = useState([]);
     const [units, setUnits] = useState([]);
 
+    const [showExpiringOnly, setShowExpiringOnly] = useState(false);
+
     useFocusEffect(
         useCallback(() => {
             if (db) {
@@ -225,10 +227,26 @@ const PantryScreen = ({ route, db }) => {
         </View>
     );
 
+    const displayedPantryItems = pantryItems.filter(item => {
+        if (showExpiringOnly) {
+            return isExpiringSoon(item.expirationDate);
+        }
+        return true;
+    });
+
     return (
         <View style={styles.container}>
+            <View style={styles.filtersContainer}>
+                <TouchableOpacity 
+                    style={[styles.sortButton, showExpiringOnly && styles.sortButtonActive]} 
+                    onPress={() => setShowExpiringOnly(!showExpiringOnly)}
+                >
+                    <Text style={[styles.sortButtonText, showExpiringOnly && styles.sortButtonTextActive]}>Mostra vicini alla scadenza</Text>
+                </TouchableOpacity>
+            </View>
+
             <FlatList
-                data={pantryItems}
+                data={displayedPantryItems}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.list}
@@ -476,6 +494,20 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
     },
+    filtersContainer: {
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        paddingBottom: 5,
+        backgroundColor: '#fff',
+    },
+    sortButton: {
+        paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10,
+        borderWidth: 1, borderColor: '#C6E8D2', backgroundColor: '#fff',
+        alignItems: 'center', marginBottom: 10,
+    },
+    sortButtonActive: { backgroundColor: '#2D7A4F', borderColor: '#2D7A4F' },
+    sortButtonText: { fontSize: 14, color: '#2D7A4F', fontWeight: 'bold' },
+    sortButtonTextActive: { color: '#fff' },
 });
 
 export default PantryScreen;

@@ -40,6 +40,12 @@ const RecipeScreen = ({ route, db }) => {
     const [editingRecipe, setEditingRecipe] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
 
+    const [recipeSearchQuery, setRecipeSearchQuery] = useState('');
+    const [filteredRecipeNames, setFilteredRecipeNames] = useState([]);
+    const [selectedRecipeFilter, setSelectedRecipeFilter] = useState('');
+    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState(null);
+    const [sortByPrepTime, setSortByPrepTime] = useState(false);
+
     useFocusEffect(
         useCallback(() => {
             //Se arriviamo da PlanScreen con un ID, espande automaticamente quella card
@@ -118,6 +124,24 @@ const RecipeScreen = ({ route, db }) => {
             console.error("Error fetching recipes:", error);
             Alert.alert("Errore", "Impossibile caricare le ricette.");
         }
+    };
+
+    const handleRecipeSearch = (text) => {
+        setRecipeSearchQuery(text);
+        setSelectedRecipeFilter('');
+
+        if (text.trim().length > 0) {
+            const filtered = recipes.filter(r => r.name.toLowerCase().includes(text.toLowerCase()));
+            setFilteredRecipeNames(filtered);
+        } else {
+            setFilteredRecipeNames([]);
+        }
+    };
+
+    const handleSelectRecipeFilter = (recipe) => {
+        setSelectedRecipeFilter(recipe.name);
+        setRecipeSearchQuery(recipe.name);
+        setFilteredRecipeNames([]);
     };
 
     const handleFoodSearch = (text) => {
@@ -205,6 +229,11 @@ const RecipeScreen = ({ route, db }) => {
 
         if (!editingRecipe.name || !editingRecipe.description || !editingRecipe.difficulty || !editingRecipe.category || editingRecipe.preparationTimeMinutes === '' || editingRecipe.numberOfServings === '') {
             Alert.alert("Errore", "Tutti i campi sono obbligatori.");
+            return;
+        }
+
+        if (!editingRecipe.ingredients || editingRecipe.ingredients.length === 0) {
+            Alert.alert("Errore", "Non puoi creare una ricetta se prima non inserisci almeno un ingrediente!");
             return;
         }
 
@@ -340,10 +369,60 @@ const RecipeScreen = ({ route, db }) => {
         );
     };
 
+    let displayedRecipes = recipes.filter(r => {
+        let matchName = true;
+        if (selectedRecipeFilter) {
+            matchName = r.name === selectedRecipeFilter;
+        } else if (recipeSearchQuery.trim().length > 0) {
+            matchName = r.name.toLowerCase().includes(recipeSearchQuery.toLowerCase());
+        }
+        let matchCat = selectedCategoryFilter ? r.category === selectedCategoryFilter : true;
+        return matchName && matchCat;
+    });
+
+    if (sortByPrepTime) {
+        displayedRecipes.sort((a, b) => a.preparationTimeMinutes - b.preparationTimeMinutes);
+    }
+
     return (
         <View style={styles.container}>
+            <View style={styles.filtersContainer}>
+                <View style={{ zIndex: 10 }}>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Cerca ricetta per nome..."
+                        value={recipeSearchQuery}
+                        onChangeText={handleRecipeSearch}
+                    />
+                    {filteredRecipeNames.length > 0 && !selectedRecipeFilter && (
+                        <ScrollView style={styles.recipeAutocompleteContainer} keyboardShouldPersistTaps="handled">
+                            {filteredRecipeNames.map(r => (
+                                <TouchableOpacity key={r.id} style={styles.autocompleteItem} onPress={() => handleSelectRecipeFilter(r)}>
+                                    <Text style={styles.autocompleteText}>{r.name}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    )}
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryFilterContainer}>
+                    <TouchableOpacity style={[styles.filterChip, selectedCategoryFilter === null && styles.filterChipActive]} onPress={() => setSelectedCategoryFilter(null)}>
+                        <Text style={[styles.filterChipText, selectedCategoryFilter === null && styles.filterChipTextActive]}>Tutte</Text>
+                    </TouchableOpacity>
+                    {categories.map(cat => (
+                        <TouchableOpacity key={cat.id} style={[styles.filterChip, selectedCategoryFilter === cat.description && styles.filterChipActive]} onPress={() => setSelectedCategoryFilter(cat.description)}>
+                            <Text style={[styles.filterChipText, selectedCategoryFilter === cat.description && styles.filterChipTextActive]}>{cat.description}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
+                <TouchableOpacity style={[styles.sortButton, sortByPrepTime && styles.sortButtonActive]} onPress={() => setSortByPrepTime(!sortByPrepTime)}>
+                    <Text style={[styles.sortButtonText, sortByPrepTime && styles.sortButtonTextActive]}>Ordina per tempo di preparazione</Text>
+                </TouchableOpacity>
+            </View>
+
             <FlatList
-                data={recipes}
+                data={displayedRecipes}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.list}
@@ -673,6 +752,44 @@ const styles = StyleSheet.create({
     pickerPlaceholder: {
         color: '#7AB894',
     },
+    filtersContainer: {
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        paddingBottom: 5,
+        backgroundColor: '#fff',
+        zIndex: 10,
+    },
+    searchInput: {
+        borderWidth: 1, borderColor: '#C6E8D2', borderRadius: 10,
+        padding: 10, marginBottom: 10, fontSize: 16, backgroundColor: '#F0FAF4',
+        color: '#1F5C3A',
+    },
+    recipeAutocompleteContainer: {
+        backgroundColor: 'white', borderWidth: 1, borderColor: '#C6E8D2',
+        borderRadius: 10, maxHeight: 150, marginBottom: 10,
+        position: 'absolute', top: 55, left: 0, right: 0, zIndex: 1000,
+        elevation: 5,
+    },
+    categoryFilterContainer: {
+        flexDirection: 'row',
+        marginBottom: 10,
+    },
+    filterChip: {
+        paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16,
+        borderWidth: 1, borderColor: '#C6E8D2', backgroundColor: '#fff',
+        marginRight: 8,
+    },
+    filterChipActive: { backgroundColor: '#2D7A4F', borderColor: '#2D7A4F' },
+    filterChipText: { fontSize: 14, color: '#2D7A4F' },
+    filterChipTextActive: { color: '#fff', fontWeight: 'bold' },
+    sortButton: {
+        paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10,
+        borderWidth: 1, borderColor: '#C6E8D2', backgroundColor: '#fff',
+        alignItems: 'center', marginBottom: 10,
+    },
+    sortButtonActive: { backgroundColor: '#2D7A4F', borderColor: '#2D7A4F' },
+    sortButtonText: { fontSize: 14, color: '#2D7A4F', fontWeight: 'bold' },
+    sortButtonTextActive: { color: '#fff' },
 });
 
 export default RecipeScreen;

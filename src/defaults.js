@@ -4,11 +4,7 @@ export async function insertDefaultValues(db) {
             INSERT OR IGNORE INTO UnitOfMeasure (id, symbol) VALUES 
             (1, 'g'), 
             (2, 'ml'),
-            (3, 'pz'),
-            (4, 'kg'),
-            (5, 'l'),
-            (6, 'cucchiaio'),
-            (7, 'pizzico');
+            (3, 'pz');
 
             INSERT OR IGNORE INTO DayOfWeek (id, name) VALUES 
             (1, 'Lunedì'),
@@ -83,7 +79,17 @@ export async function insertDefaultValues(db) {
             (28, 'Lievito per dolci', 'Lievito in polvere', 8),
             (29, 'Yogurt Bianco', 'Yogurt bianco naturale', 5),
             (30, 'Miele', 'Miele millefiori', 8),
-            (31, 'Noci', 'Gherigli di noci', 2);
+            (31, 'Noci', 'Gherigli di noci', 2),
+            (32, 'Maiale', 'Arista di maiale', 3),
+            (33, 'Salsiccia', 'Salsiccia di suino', 3),
+            (34, 'Merluzzo', 'Filetto di merluzzo', 4),
+            (35, 'Salmone', 'Filetto di salmone fresco', 4),
+            (36, 'Banana', 'Banane Chiquita', 2),
+            (37, 'Fragole', 'Fragole fresche', 2),
+            (38, 'Melanzane', 'Melanzane nere', 1),
+            (39, 'Peperoni', 'Peperoni gialli e rossi', 1),
+            (40, 'Mozzarella', 'Mozzarella di bufala', 5),
+            (41, 'Pesto', 'Pesto alla genovese', 8);
 
             INSERT OR IGNORE INTO Recipe (id, name, preparationTimeMinutes, numberOfServings, description, difficulty, category, note) VALUES
             (1, 'Pasta al Pomodoro', 20, 2, 'Tritare finemente la cipolla.\nIn una padella, scaldare l''olio e soffriggere la cipolla finché non diventa trasparente.\nAggiungere la passata di pomodoro e un pizzico di sale.\nLasciar cuocere a fuoco lento per circa 15 minuti.\nNel frattempo, cuocere la pasta in abbondante acqua salata.\nScolare la pasta al dente e saltarla in padella con il sugo.\nGuarnire con basilico fresco.', 1, 1, 'Aggiungere basilico fresco se disponibile.'),
@@ -95,15 +101,18 @@ export async function insertDefaultValues(db) {
             (7, 'Zucchine Trifolate', 20, 2, 'Lavare le zucchine e tagliarle a rondelle sottili.\nIn una padella, scaldare l''olio con uno spicchio d''aglio.\nAggiungere le zucchine e cuocere a fuoco vivace per 10 minuti, mescolando spesso.\nSalare e pepare a fine cottura.\nSpolverare con prezzemolo fresco tritato.', 1, 3, 'Ottimo contorno per carne o pesce.'),
             (8, 'Torta di Mele Semplice', 60, 6, 'Sbucciare le mele e tagliarle a fettine.\nIn una ciotola, montare le uova con lo zucchero finché non diventano chiare.\nAggiungere il burro fuso tiepido e il latte, continuando a mescolare.\nIncorporare la farina setacciata e il lievito.\nVersare l''impasto in una tortiera imburrata e infarinata.\nDisporre le fettine di mela sulla superficie a raggiera.\nCuocere in forno a 180°C per circa 40-45 minuti.', 2, 4, 'Servire con una spolverata di zucchero a velo.'),
             (9, 'Yogurt con Miele e Noci', 5, 1, 'Versare lo yogurt in una ciotolina.\nAggiungere un cucchiaio di miele.\nTritare grossolanamente le noci e cospargerle sopra lo yogurt.\nMescolare leggermente prima di consumare.', 1, 4, 'Perfetto per colazione o spuntino.'),
-            (10, 'Pane e Pomodoro', 5, 1, 'Tagliare il pane a fette e tostarlo leggermente.\nStrofinare uno spicchio d''aglio sulle fette di pane (opzionale).\nTagliare i pomodori a cubetti o strofinarli direttamente sul pane.\nCondire con un filo d''olio, sale e basilico fresco.', 1, 5, 'La merenda tradizionale italiana.');
+            (10, 'Pane e Pomodoro', 5, 1, 'Tagliare il pane a fette e tostarlo leggermente.\nStrofinare uno spicchio d''aglio sulle fette di pane (opzionale).\nTagliare i pomodori a cubetti o strofinarli direttamente sul pane.\nCondire con un filo d''olio, sale e basilico fresco.', 1, 5, 'La merenda tradizionale italiana.'),
+            (11, 'Salmone al Forno', 25, 2, 'Adagiare i filetti di salmone su una teglia.\nCondire con olio, sale e un po'' di succo di limone.\nCuocere in forno a 180°C per circa 15-20 minuti.\nServire caldo.', 1, 2, 'Semplice e salutare.'),
+            (12, 'Pasta al Pesto', 15, 2, 'Cuocere la pasta in acqua bollente salata.\nIn una ciotola, diluire il pesto con un cucchiaio di acqua di cottura.\nScolare la pasta e mescolarla con il pesto.\nServire subito.', 1, 1, 'Il salvacena perfetto.'),
+            (13, 'Polpette al Sugo', 45, 4, 'In una ciotola, mescolare carne macinata, uovo, sale e un po'' di pane ammollato.\nFormare delle palline con le mani.\nIn una padella, scaldare un po'' di sugo di pomodoro.\nAggiungere le polpette e cuocere a fuoco lento per 30 minuti.\nGirare delicatamente a metà cottura.', 2, 2, 'Piatto amato da grandi e piccini.');
 
             INSERT OR IGNORE INTO Ingredient (id, quantity, recipe, unitOfMeasure, food) VALUES
             (1, 160, 1, 1, 1),
             (2, 200, 1, 2, 2),
-            (3, 1, 1, 6, 3),
-            (4, 1, 1, 7, 4),
+            (3, 15, 1, 2, 3),
+            (4, 2, 1, 1, 4),
             (5, 4, 2, 3, 8),
-            (6, 1, 2, 7, 4),
+            (6, 2, 2, 1, 4),
             (7, 10, 2, 1, 12),
             (8, 80, 3, 1, 14),
             (9, 10, 3, 1, 12),
@@ -111,18 +120,18 @@ export async function insertDefaultValues(db) {
             (11, 100, 4, 1, 20),
             (12, 3, 4, 3, 8),
             (13, 40, 4, 1, 21),
-            (14, 1, 4, 7, 22),
+            (14, 1, 4, 1, 22),
             (15, 300, 5, 1, 16),
             (16, 400, 5, 1, 17),
-            (17, 2, 5, 6, 3),
-            (18, 1, 5, 7, 4),
+            (17, 30, 5, 2, 3),
+            (18, 2, 5, 1, 4),
             (19, 1, 5, 3, 18),
             (20, 160, 6, 1, 24),
             (21, 240, 6, 1, 25),
             (22, 0.5, 6, 3, 5),
-            (23, 1, 6, 6, 3),
+            (23, 15, 6, 2, 3),
             (24, 400, 7, 1, 19),
-            (25, 2, 7, 6, 3),
+            (25, 30, 7, 2, 3),
             (26, 1, 7, 3, 6),
             (27, 3, 8, 3, 15),
             (28, 200, 8, 1, 10),
@@ -132,22 +141,48 @@ export async function insertDefaultValues(db) {
             (32, 80, 8, 1, 12),
             (33, 1, 8, 3, 28),
             (34, 150, 9, 1, 29),
-            (35, 1, 9, 6, 30),
+            (35, 15, 9, 2, 30),
             (36, 20, 9, 1, 31),
             (37, 100, 10, 1, 23),
             (38, 1, 10, 3, 2),
-            (39, 1, 10, 6, 3),
-            (40, 1, 10, 7, 4);
+            (39, 15, 10, 2, 3),
+            (40, 2, 10, 1, 4),
+            (41, 300, 11, 1, 35),
+            (42, 10, 11, 2, 3),
+            (43, 2, 11, 1, 4),
+            (44, 10, 11, 2, 27),
+            (45, 160, 12, 1, 1),
+            (46, 80, 12, 1, 41),
+            (47, 400, 13, 1, 13),
+            (48, 1, 13, 3, 8),
+            (49, 300, 13, 2, 2),
+            (50, 2, 13, 1, 4);
 
             INSERT OR IGNORE INTO Meal (id, recipe, dayOfWeek, timeSlot) VALUES
             (1, 1, 1, 3),
             (2, 2, 2, 5),
-            (3, 3, 3, 3);
+            (3, 3, 3, 3),
+            (4, 4, 1, 5),
+            (5, 5, 2, 3),
+            (6, 6, 3, 5),
+            (7, 7, 4, 3),
+            (8, 11, 4, 5),
+            (9, 12, 5, 3),
+            (10, 13, 5, 5),
+            (11, 1, 6, 3),
+            (12, 2, 6, 5),
+            (13, 3, 7, 3),
+            (14, 5, 7, 5);
 
             INSERT OR IGNORE INTO PantryProduct (id, expirationDate, quantity, warningQuantity, unitOfMeasure, food, note) VALUES
             (1, '2026-12-31', 500, 100, 1, 1, 'Pasta di riserva'),
-            (2, '2026-07-15', 3, 1, 5, 11, 'Zucchero scorta'),
-            (3, '2026-06-20', 1, 0.2, 5, 3, 'Olio aperto');
+            (2, '2026-07-15', 3000, 1000, 1, 11, 'Zucchero scorta'),
+            (3, '2026-06-20', 1000, 200, 2, 3, 'Olio aperto'),
+            (4, '2026-06-02', 4, 2, 3, 8, 'Uova fresche'),
+            (5, '2026-05-25', 200, 50, 2, 9, 'Latte aperto'),
+            (6, '2026-06-10', 500, 100, 1, 13, 'Carne per polpette'),
+            (7, '2026-06-15', 200, 50, 1, 41, 'Pesto fresco'),
+            (8, '2026-06-05', 250, 50, 1, 40, 'Mozzarella fresca');
 
             INSERT OR IGNORE INTO ShoppingItem (id, name, quantity, purchaseDate, unitOfMeasure, purchased) VALUES
             (1, 'Pane fresco', 2, '2026-06-01', 3, 0);

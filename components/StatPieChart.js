@@ -48,7 +48,14 @@ const styles = StyleSheet.create({
     },
 });
 
-const colors = ['#1F5C3A', '#2D7A4F', '#52A876', '#A8D9BC'];
+const colors = [
+    '#143D25', // Foresta scuro
+    '#2D7A4F', // Verde brand
+    '#4CAF50', // Verde vibrante
+    '#9CCC65', // Verde mela/lime
+    '#A8D9BC', // Menta chiaro
+    '#004D40', // Verde petrolio scuro
+];
 
 const StatPieChart = ({ series }) => {
     const data = series.map((s, i) => ({

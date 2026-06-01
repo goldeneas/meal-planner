@@ -63,7 +63,7 @@ export const StatScreen = ({ navigation, db }) => {
                     { label: 'Prodotti in Scadenza', value: expiringProductsCount.count },
                     { label: 'Prodotti Scaduti', value: expiredProductsCount.count },
                     { label: 'Prodotti Mancanti', value: missingFoodCount.count },
-                    { label: 'Tempo Medio\ndi Preparazione', value: avgRecipePrepTimeMinutes.count },
+                    { label: ' Tempo Medio\ndi Preparazione', value: avgRecipePrepTimeMinutes.count.toFixed(0) + "m" },
                 ]);
             }
 

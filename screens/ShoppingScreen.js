@@ -4,8 +4,6 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatTextHeader from '../components/StatTextHeader';
 import { getShoppingItems, insertShoppingItem, deleteShoppingItem, updateShoppingItemQuantity, getMissingShoppingItems, setShoppingItemPurchased } from '../src/shopping';
-import { getFoods, insertFood } from '../src/food';
-import { insertPantryItem } from '../src/pantry';
 import { getUnitOfMeasureSymbols } from '../src/uom';
 
 const ShoppingScreen = ({ db }) => {

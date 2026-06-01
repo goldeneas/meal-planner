@@ -64,7 +64,6 @@ export default function PlanScreen({ navigation, db }) {
     const [isModalVisible, setModalVisible] = useState(false);
     const [activeSlotForAdd, setActiveSlotForAdd] = useState(null);
     const [editingMealId, setEditingMealId] = useState(null);
-    const [refreshKey, setRefreshKey] = useState(0);
 
     useFocusEffect(
         useCallback(() => {
@@ -82,27 +81,29 @@ export default function PlanScreen({ navigation, db }) {
             loadInitialData();
         }, [db]));
 
+
+    const loadMealsForDay = async () => {
+        if (!db || timeSlots.length === 0) return;
+        try {
+            const jsDay = selectedDate.getDay();
+            const dowId = jsDay === 0 ? 7 : jsDay;
+            const mealsForToday = await getMealsByDayOfWeek(db, dowId);
+            const organizedMeals = {};
+            timeSlots.forEach(slot => {
+                organizedMeals[slot.id] = (mealsForToday || []).filter(m => m.timeSlot === slot.id);
+            });
+        
+            setDayMeals(organizedMeals);
+        } catch (error) {
+            console.error("Errore nel caricamento dei pasti:", error);
+        }
+    };
+
     useFocusEffect(
         useCallback(() => {
-            const loadMealsForDay = async () => {
-                if (!db || timeSlots.length === 0) return;
-                try {
-                    const jsDay = selectedDate.getDay();
-                    const dowId = jsDay === 0 ? 7 : jsDay;
-                    const mealsForToday = await getMealsByDayOfWeek(db, dowId);
-                    const organizedMeals = {};
-                    timeSlots.forEach(slot => {
-                        organizedMeals[slot.id] = (mealsForToday || []).filter(m => m.timeSlot === slot.id);
-                    });
-
-                    setDayMeals(organizedMeals);
-                } catch (error) {
-                    console.error("Errore nel caricamento dei pasti:", error);
-                }
-            };
-
             loadMealsForDay();
-        }, [selectedDate, timeSlots, refreshKey, db]));
+        }, [selectedDate, timeSlots, db])
+    );
 
     const handlePrevDay = () => {
         const prev = new Date(selectedDate);
@@ -142,7 +143,7 @@ export default function PlanScreen({ navigation, db }) {
                     onPress: async () => {
                         try {
                             await deleteMealById(db, mealId);
-                            setRefreshKey(oldKey => oldKey + 1);
+                            await loadMealsForDay();
                         } catch (error) {
                             console.error("Errore cancellazione: ", error);
                         }
@@ -171,7 +172,8 @@ export default function PlanScreen({ navigation, db }) {
             setModalVisible(false);
             setActiveSlotForAdd(null);
             setEditingMealId(null);
-            setRefreshKey(oldKey => oldKey + 1);
+            
+            await loadMealsForDay();
 
         } catch (error) {
             console.error("Errore durante il salvataggio: ", error);

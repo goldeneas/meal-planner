@@ -8,6 +8,7 @@ import { getUnitsOfMeasure } from '../src/uom';
 import { getFoods } from '../src/food';
 import { getIngredients, insertIngredient, removeIngredientById } from '../src/ingredient';
 
+// Componente per simulare un menu a tendina nativo
 const ActionSheetPicker = ({ title, options, value, placeholder, onSelect }) => {
     const { showActionSheetWithOptions } = useActionSheet();
 
@@ -48,13 +49,13 @@ const RecipeScreen = ({ route, db }) => {
 
     useFocusEffect(
         useCallback(() => {
-            //Se arriviamo da PlanScreen con un ID, espande automaticamente quella card
+            // Se arriviamo da PlanScreen con un ID, espande automaticamente quella card
             if (route?.params?.openRecipeId) {
                 setExpandedId(route.params.openRecipeId);
             }
         }, [route?.params?.openRecipeId]));
 
-    // Stati per l'aggiunta di ingredienti
+    // Stati per la gestione della ricerca e aggiunta ingredienti
     const [foodSearchQuery, setFoodSearchQuery] = useState('');
     const [filteredFoods, setFilteredFoods] = useState([]);
     const [selectedFood, setSelectedFood] = useState(null);
@@ -66,6 +67,7 @@ const RecipeScreen = ({ route, db }) => {
     const [categories, setCategories] = useState([]);
     const [difficulties, setDifficulties] = useState([]);
 
+    // Caricamento dei dati quando la schermata riceve il focus
     useFocusEffect(
         useCallback(() => {
             if (db) {
@@ -74,6 +76,7 @@ const RecipeScreen = ({ route, db }) => {
             }
         }, [db]));
 
+    // Recupera i dati di appoggio necessari dal database (unità, cibi, categorie, difficoltà)
     const loadStaticData = async () => {
         try {
             const uoms = await getUnitsOfMeasure(db);
@@ -89,6 +92,7 @@ const RecipeScreen = ({ route, db }) => {
         }
     };
 
+    // Recupera le ricette e unisce i dati degli ingredienti per ogni riceta
     const fetchRecipes = async () => {
         if (!db) return;
         try {
@@ -126,6 +130,7 @@ const RecipeScreen = ({ route, db }) => {
         }
     };
 
+    // Filtra l'autocompletamento per la ricerca ricette testuale
     const handleRecipeSearch = (text) => {
         setRecipeSearchQuery(text);
         setSelectedRecipeFilter('');
@@ -138,12 +143,14 @@ const RecipeScreen = ({ route, db }) => {
         }
     };
 
+    // Seleziona la ricetta dall'autocompletamento di ricerca
     const handleSelectRecipeFilter = (recipe) => {
         setSelectedRecipeFilter(recipe.name);
         setRecipeSearchQuery(recipe.name);
         setFilteredRecipeNames([]);
     };
 
+    // Cerca il cibo nel db per poterlo aggiungere come ingrediente
     const handleFoodSearch = (text) => {
         setFoodSearchQuery(text);
         setSelectedFood(null);
@@ -156,12 +163,14 @@ const RecipeScreen = ({ route, db }) => {
         }
     };
 
+    // Seleziona un cibo specifico dall'autocompletamento degli ingredienti
     const handleSelectFood = (food) => {
         setSelectedFood(food);
         setFoodSearchQuery(food.name);
         setFilteredFoods([]);
     };
 
+    // Aggiunge temporaneamente l'ingrediente allo state della ricetta
     const handleAddIngredient = () => {
         if (!selectedFood || !ingredientQty || !ingredientUnit) {
             Alert.alert("Errore", "Seleziona un cibo, inserisci la quantità e scegli un'unità di misura.");
@@ -186,6 +195,7 @@ const RecipeScreen = ({ route, db }) => {
         setIngredientUnit('');
     };
 
+    // Rimuove un ingrediente temporaneamente dalla lista in modifica
     const handleRemoveIngredient = (index) => {
         const updatedIngredients = [...(editingRecipe.ingredients || [])];
         updatedIngredients.splice(index, 1);
@@ -195,11 +205,13 @@ const RecipeScreen = ({ route, db }) => {
         });
     };
 
+    // Prepara il form per la modifica
     const handleEditClick = (recipe) => {
         setEditingRecipe({ ...recipe });
         resetIngredientForm();
     };
 
+    // Prepara il form per aggiungere una nuova ricetta
     const handleAddClick = () => {
         setEditingRecipe({
             name: '',
@@ -213,6 +225,7 @@ const RecipeScreen = ({ route, db }) => {
         resetIngredientForm();
     };
 
+    // Resetta i campi di inserimento per il singolo ingrediente
     const resetIngredientForm = () => {
         setSelectedFood(null);
         setFoodSearchQuery('');
@@ -221,6 +234,7 @@ const RecipeScreen = ({ route, db }) => {
         setFilteredFoods([]);
     };
 
+    // Valida i campi e salva ricetta e ingredienti nel db
     const saveEdit = () => {
         if (!db) {
             Alert.alert("Errore", "Database non pronto. Riprova tra qualche istante.");
@@ -297,6 +311,7 @@ const RecipeScreen = ({ route, db }) => {
         saveToDb();
     };
 
+    // Rimuove la ricetta e (tramite vincoli/logica nel db) i suoi ingredienti
     const removeRecipe = async (id) => {
         if (!db) return;
         try {
@@ -308,10 +323,12 @@ const RecipeScreen = ({ route, db }) => {
         }
     };
 
+    // Apre/chiude l'accordion della ricetta
     const toggleExpand = (id) => {
         setExpandedId((prevId) => (prevId === id ? null : id));
     };
 
+    // Disegna la singola card di una ricetta
     const renderItem = ({ item }) => {
         const isExpanded = expandedId === item.id;
 
@@ -369,6 +386,7 @@ const RecipeScreen = ({ route, db }) => {
         );
     };
 
+    // Filtra e ordina la lista in base alla categoria, ricerca testuale e tempo
     let displayedRecipes = recipes.filter(r => {
         let matchName = true;
         if (selectedRecipeFilter) {
@@ -386,6 +404,7 @@ const RecipeScreen = ({ route, db }) => {
 
     return (
         <View style={styles.container}>
+            {/* Contenitore filtri e barra di ricerca */}
             <View style={styles.filtersContainer}>
                 <View style={{ zIndex: 10 }}>
                     <TextInput
@@ -421,6 +440,7 @@ const RecipeScreen = ({ route, db }) => {
                 </TouchableOpacity>
             </View>
 
+            {/* Lista delle ricette */}
             <FlatList
                 data={displayedRecipes}
                 keyExtractor={(item) => item.id.toString()}
@@ -429,10 +449,12 @@ const RecipeScreen = ({ route, db }) => {
                 ListEmptyComponent={<Text style={styles.emptyText}>Non ci sono ricette salvate.</Text>}
             />
 
+            {/* Pulsante aggiungi */}
             <TouchableOpacity style={styles.fab} onPress={handleAddClick}>
                 <Text style={styles.fabIcon}>+</Text>
             </TouchableOpacity>
 
+            {/* Modale inserimento / modifica */}
             <Modal visible={!!editingRecipe} animationType="slide" transparent={true}>
                 <ActionSheetProvider>
                 <View style={styles.modalOverlay}>

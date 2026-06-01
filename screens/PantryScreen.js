@@ -8,6 +8,7 @@ import { getFoodCategories, getFoods, insertFood, updateFoodById } from '../src/
 import { getUnitsOfMeasure } from '../src/uom';
 import { deletePantryItem, getPantryItems, insertPantryItem, updatePantryItem } from '../src/pantry';
 
+// Componente per mostrare un menu a tendina nativo
 const ActionSheetPicker = ({ title, options, value, placeholder, onSelect }) => {
     const { showActionSheetWithOptions } = useActionSheet();
 
@@ -45,6 +46,7 @@ const PantryScreen = ({ route, db }) => {
 
     const [showExpiringOnly, setShowExpiringOnly] = useState(false);
 
+    // Caricamento dei dati quando la schermata riceve il focus
     useFocusEffect(
         useCallback(() => {
             if (db) {
@@ -53,6 +55,7 @@ const PantryScreen = ({ route, db }) => {
             }
         }, [db]));
 
+    // Recupera categorie e unità di misura dal database
     const loadStaticData = async () => {
         try {
             const cats = await getFoodCategories(db);
@@ -64,6 +67,7 @@ const PantryScreen = ({ route, db }) => {
         }
     };
 
+    // Recupera i prodotti salvati in dispensa
     const fetchPantryItems = async () => {
         if (!db) return;
         try {
@@ -75,10 +79,12 @@ const PantryScreen = ({ route, db }) => {
         }
     };
 
+    // Prepara il form per la modifica di un prodotto esistente
     const handleEditClick = (item) => {
         setEditingItem({ ...item });
     };
 
+    // Prepara il form per aggiungere un nuovo prodoto
     const handleAddClick = () => {
         setEditingItem({
             name: '',
@@ -91,6 +97,7 @@ const PantryScreen = ({ route, db }) => {
         });
     };
 
+    // Valida i campi e salva (inserimento o aggiornamento) nel database
     const saveEdit = async () => {
         if (!editingItem.name || !editingItem.category || !editingItem.unitOfMeasure || editingItem.quantity === '' || editingItem.quantity == null) {
             Alert.alert("Errore", "I campi Nome, Categoria, Quantità e Unità di misura sono obbligatori.");
@@ -158,6 +165,7 @@ const PantryScreen = ({ route, db }) => {
         }
     };
 
+    // Gestisce la selezione della data di scadenza
     const onDateChange = (event, selectedDate) => {
         setShowDatePicker(false);
         if (selectedDate) {
@@ -169,6 +177,7 @@ const PantryScreen = ({ route, db }) => {
         }
     };
 
+    // Controlla se un prodotto scade entro 3 giorni
     const isExpiringSoon = (expirationDate) => {
         if (!expirationDate) return false;
         const expDate = new Date(expirationDate);
@@ -180,6 +189,7 @@ const PantryScreen = ({ route, db }) => {
         return diffDays <= 3;
     };
 
+    // Elimina un prodotto dalla dispensa
     const removePantryItem = async (id) => {
         if (!db) return;
         try {
@@ -191,6 +201,7 @@ const PantryScreen = ({ route, db }) => {
         }
     };
 
+    // Disegna la card del singolo prodotto
     const renderItem = ({ item }) => (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
@@ -228,6 +239,7 @@ const PantryScreen = ({ route, db }) => {
         </View>
     );
 
+    // Filtra i prodotti per mostrare solo quelli in scadenza, se richiesto
     const displayedPantryItems = pantryItems.filter(item => {
         if (showExpiringOnly) {
             return isExpiringSoon(item.expirationDate);
@@ -238,6 +250,7 @@ const PantryScreen = ({ route, db }) => {
     return (
         <View style={styles.container}>
             <View style={styles.filtersContainer}>
+                {/* Filtri di visualizzazione */}
                 <TouchableOpacity
                     style={[styles.sortButton, showExpiringOnly && styles.sortButtonActive]}
                     onPress={() => setShowExpiringOnly(!showExpiringOnly)}
@@ -246,6 +259,7 @@ const PantryScreen = ({ route, db }) => {
                 </TouchableOpacity>
             </View>
 
+            {/* Lista dei prodotti in dispensa */}
             <FlatList
                 data={displayedPantryItems}
                 keyExtractor={(item) => item.id.toString()}
@@ -254,11 +268,13 @@ const PantryScreen = ({ route, db }) => {
                 ListEmptyComponent={<Text style={styles.emptyText}>La dispensa è vuota.</Text>}
             />
 
+            {/* Pulsante per aggiungere un nuovo prodotto */}
             <TouchableOpacity style={styles.fab} onPress={handleAddClick}>
                 <Text style={styles.fabIcon}>+</Text>
             </TouchableOpacity>
 
 
+            {/* Modale per l'inserimento e la modifica dei prodotti */}
             <Modal visible={!!editingItem} animationType="slide" transparent={true}>
                 <ActionSheetProvider>
                     <View style={styles.modalOverlay}>

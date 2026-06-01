@@ -1,0 +1,51 @@
+@startuml
+left to right direction
+actor "Utente" as User
+
+package "Meal Planner System" {
+    usecase "UC1: Gestione Ricette" as UC1
+    usecase "UC2: Pianificazione Pasti" as UC2
+    usecase "UC3: Generazione Automatica Spesa" as UC3
+
+    note right of UC1
+      **Attore:** Utente
+      **Descrizione:** Creazione e modifica di ricette con ingredienti.
+      **Flusso Principale:**
+      1. Accede a "Ricette"
+      2. Inserisce dettagli (nome, tempo, difficoltà)
+      3. Aggiunge ingredienti (quantità e unità)
+      4. Salva la ricetta
+      **Flusso Alternativo:**
+      - 3a. Alimento non presente: l'utente crea un nuovo alimento.
+    end note
+
+    note right of UC2
+      **Attore:** Utente
+      **Descrizione:** Organizzazione del menù settimanale.
+      **Flusso Principale:**
+      1. Accede a "Piano"
+      2. Seleziona giorno e fascia oraria
+      3. Seleziona una ricetta esistente
+      4. Conferma l'inserimento nel piano
+      **Flusso Alternativo:**
+      - 3a. Ricetta mancante: l'utente naviga verso "Ricette" per crearla.
+    end note
+
+    note right of UC3
+      **Attore:** Utente / Sistema
+      **Descrizione:** Generazione lista spesa basata su piano e dispensa.
+      **Flusso Principale:**
+      1. Accede a "Spesa"
+      2. Clicca "Genera Automaticamente"
+      3. Il sistema calcola il fabbisogno meno la dispensa
+      4. Gli articoli mancanti appaiono in lista
+      **Flusso Alternativo:**
+      - 3a. Dispensa già colma: il sistema avvisa l'utente.
+    end note
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+
+@enduml

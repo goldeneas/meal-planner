@@ -234,7 +234,6 @@ export default function PlanScreen({ navigation, db }) {
                                         onPress={() => handleSelectRecipe(item.id)}
                                     >
                                         <Text style={styles.recipeListText}>{item.name}</Text>
-                                        <Text style={styles.recipeListSubText}>{item.category}</Text>
                                     </TouchableOpacity>
                                 )}
                                 style={{ maxHeight: 300 }}

@@ -153,11 +153,11 @@ const ShoppingScreen = ({ db }) => {
             </TouchableOpacity>
 
             <View style={styles.quantityControls}>
-                <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity, -0.5)} style={styles.qtyBtn}>
+                <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity, -1)} style={styles.qtyBtn}>
                     <Text style={styles.qtyBtnText}>-</Text>
                 </TouchableOpacity>
                 <Text style={styles.qtyText}>{item.quantity}</Text>
-                <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity, 0.5)} style={styles.qtyBtn}>
+                <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity, 1)} style={styles.qtyBtn}>
                     <Text style={styles.qtyBtnText}>+</Text>
                 </TouchableOpacity>
             </View>
@@ -196,7 +196,7 @@ const ShoppingScreen = ({ db }) => {
                     {units.map((u, index) => {
                         const currentId = index + 1;
                         return (
-                            <TouchableOpacity key={u} style={[styles.unitBtn, newUnit === currentId && styles.unitBtnActive]}onPress={() => setNewUnit(currentId)}
+                            <TouchableOpacity key={u} style={[styles.unitBtn, newUnit === currentId && styles.unitBtnActive]} onPress={() => setNewUnit(currentId)}
                             >
                                 <Text style={[styles.unitBtnText, newUnit === currentId && styles.unitBtnTextActive]}>{u}</Text>
                             </TouchableOpacity>

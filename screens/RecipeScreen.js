@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ScrollView, Alert } from 'react-native';
 import { useActionSheet, ActionSheetProvider } from '@expo/react-native-action-sheet';
@@ -36,10 +36,13 @@ const ActionSheetPicker = ({ title, options, value, placeholder, onSelect }) => 
     );
 };
 
-const RecipeScreen = ({ route, db }) => {
+const RecipeScreen = ({ route, navigation, db }) => {
     const [recipes, setRecipes] = useState([]);
     const [editingRecipe, setEditingRecipe] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
+
+    const flatListRef = useRef(null);
+    const [hasScrolledToExpanded, setHasScrolledToExpanded] = useState(false);
 
     const [recipeSearchQuery, setRecipeSearchQuery] = useState('');
     const [filteredRecipeNames, setFilteredRecipeNames] = useState([]);
@@ -52,8 +55,11 @@ const RecipeScreen = ({ route, db }) => {
             // Se arriviamo da PlanScreen con un ID, espande automaticamente quella card
             if (route?.params?.openRecipeId) {
                 setExpandedId(route.params.openRecipeId);
+                setHasScrolledToExpanded(false);
+                // Pulisce il parametro per evitare nuovi scroll se si cambia semplicemente tab in seguito
+                navigation.setParams({ openRecipeId: undefined });
             }
-        }, [route?.params?.openRecipeId]));
+        }, [route?.params?.openRecipeId, navigation]));
 
     // Stati per la gestione della ricerca e aggiunta ingredienti
     const [foodSearchQuery, setFoodSearchQuery] = useState('');
@@ -402,6 +408,18 @@ const RecipeScreen = ({ route, db }) => {
         displayedRecipes.sort((a, b) => a.preparationTimeMinutes - b.preparationTimeMinutes);
     }
 
+    useEffect(() => {
+        if (expandedId && displayedRecipes.length > 0 && !hasScrolledToExpanded) {
+            const index = displayedRecipes.findIndex(r => r.id === expandedId);
+            if (index !== -1 && flatListRef.current) {
+                setHasScrolledToExpanded(true);
+                setTimeout(() => {
+                    flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0 });
+                }, 300);
+            }
+        }
+    }, [expandedId, displayedRecipes, hasScrolledToExpanded]);
+
     return (
         <View style={styles.container}>
             {/* Contenitore filtri e barra di ricerca */}
@@ -442,11 +460,19 @@ const RecipeScreen = ({ route, db }) => {
 
             {/* Lista delle ricette */}
             <FlatList
+                ref={flatListRef}
                 data={displayedRecipes}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={<Text style={styles.emptyText}>Non ci sono ricette salvate.</Text>}
+                onScrollToIndexFailed={(info) => {
+                    // Gestisce i casi in cui l'elemento non è ancora renderizzato a schermo
+                    const wait = new Promise(resolve => setTimeout(resolve, 500));
+                    wait.then(() => {
+                        flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+                    });
+                }}
             />
 
             {/* Pulsante aggiungi */}

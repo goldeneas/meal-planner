@@ -130,6 +130,7 @@ const PantryScreen = ({ route, db }) => {
 
             const foods = await getFoods(db);
             const existingFood = foods.find(f => f.name && f.name.toLowerCase() === safeName.toLowerCase());
+
             let foodId;
             if (existingFood) {
                 foodId = existingFood.id;
@@ -237,8 +238,8 @@ const PantryScreen = ({ route, db }) => {
     return (
         <View style={styles.container}>
             <View style={styles.filtersContainer}>
-                <TouchableOpacity 
-                    style={[styles.sortButton, showExpiringOnly && styles.sortButtonActive]} 
+                <TouchableOpacity
+                    style={[styles.sortButton, showExpiringOnly && styles.sortButtonActive]}
                     onPress={() => setShowExpiringOnly(!showExpiringOnly)}
                 >
                     <Text style={[styles.sortButtonText, showExpiringOnly && styles.sortButtonTextActive]}>Mostra vicini alla scadenza</Text>
@@ -260,84 +261,84 @@ const PantryScreen = ({ route, db }) => {
 
             <Modal visible={!!editingItem} animationType="slide" transparent={true}>
                 <ActionSheetProvider>
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>{editingItem?.id ? 'Modifica Prodotto' : 'Nuovo Prodotto'}</Text>
-                        {editingItem && (
-                            <ScrollView>
-                                <Text style={styles.label}>Nome</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingItem.name}
-                                    onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
-                                />
-                                <Text style={styles.label}>Categoria</Text>
-                                <ActionSheetPicker
-                                    title="Seleziona Categoria"
-                                    options={categories.map(cat => cat.description || cat.name)}
-                                    value={editingItem.category}
-                                    placeholder="Seleziona una categoria..."
-                                    onSelect={(val) => setEditingItem({ ...editingItem, category: val })}
-                                />
-                                <Text style={styles.label}>Quantità</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingItem.quantity.toString()}
-                                    keyboardType="numeric"
-                                    onChangeText={(text) => setEditingItem({ ...editingItem, quantity: text })}
-                                />
-                                <Text style={styles.label}>Soglia di avviso</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingItem.warningQuantity != null ? editingItem.warningQuantity.toString() : ''}
-                                    keyboardType="numeric"
-                                    onChangeText={(text) => setEditingItem({ ...editingItem, warningQuantity: text })}
-                                />
-                                <Text style={styles.label}>Unità di misura</Text>
-                                <ActionSheetPicker
-                                    title="Seleziona Unità di Misura"
-                                    options={units.map(u => u.symbol)}
-                                    value={editingItem.unitOfMeasure}
-                                    placeholder="Seleziona unità di misura..."
-                                    onSelect={(val) => setEditingItem({ ...editingItem, unitOfMeasure: val })}
-                                />
-                                <Text style={styles.label}>Scadenza</Text>
-                                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                                    <View pointerEvents="none">
-                                        <TextInput
-                                            style={styles.input}
-                                            value={editingItem.expirationDate || ''}
-                                            placeholder="YYYY-MM-DD"
-                                            editable={false}
-                                        />
-                                    </View>
-                                </TouchableOpacity>
-                                {showDatePicker && (
-                                    <DateTimePicker
-                                        value={editingItem.expirationDate ? new Date(editingItem.expirationDate) : new Date()}
-                                        mode="date"
-                                        display="default"
-                                        onChange={onDateChange}
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>{editingItem?.id ? 'Modifica Prodotto' : 'Nuovo Prodotto'}</Text>
+                            {editingItem && (
+                                <ScrollView>
+                                    <Text style={styles.label}>Nome</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={editingItem.name}
+                                        onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
                                     />
-                                )}
-                                <Text style={styles.label}>Note</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={editingItem.note || ''}
-                                    onChangeText={(text) => setEditingItem({ ...editingItem, note: text })}
-                                />
-                                <View style={styles.modalActions}>
-                                    <View style={styles.buttonWrapper}>
-                                        <Button title="Annulla" onPress={() => setEditingItem(null)} color="#dc3545" />
+                                    <Text style={styles.label}>Categoria</Text>
+                                    <ActionSheetPicker
+                                        title="Seleziona Categoria"
+                                        options={categories.map(cat => cat.description || cat.name)}
+                                        value={editingItem.category}
+                                        placeholder="Seleziona una categoria..."
+                                        onSelect={(val) => setEditingItem({ ...editingItem, category: val })}
+                                    />
+                                    <Text style={styles.label}>Quantità</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={editingItem.quantity.toString()}
+                                        keyboardType="numeric"
+                                        onChangeText={(text) => setEditingItem({ ...editingItem, quantity: text })}
+                                    />
+                                    <Text style={styles.label}>Soglia di avviso</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={editingItem.warningQuantity != null ? editingItem.warningQuantity.toString() : ''}
+                                        keyboardType="numeric"
+                                        onChangeText={(text) => setEditingItem({ ...editingItem, warningQuantity: text })}
+                                    />
+                                    <Text style={styles.label}>Unità di misura</Text>
+                                    <ActionSheetPicker
+                                        title="Seleziona Unità di Misura"
+                                        options={units.map(u => u.symbol)}
+                                        value={editingItem.unitOfMeasure}
+                                        placeholder="Seleziona unità di misura..."
+                                        onSelect={(val) => setEditingItem({ ...editingItem, unitOfMeasure: val })}
+                                    />
+                                    <Text style={styles.label}>Scadenza</Text>
+                                    <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                        <View pointerEvents="none">
+                                            <TextInput
+                                                style={styles.input}
+                                                value={editingItem.expirationDate || ''}
+                                                placeholder="YYYY-MM-DD"
+                                                editable={false}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
+                                    {showDatePicker && (
+                                        <DateTimePicker
+                                            value={editingItem.expirationDate ? new Date(editingItem.expirationDate) : new Date()}
+                                            mode="date"
+                                            display="default"
+                                            onChange={onDateChange}
+                                        />
+                                    )}
+                                    <Text style={styles.label}>Note</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={editingItem.note || ''}
+                                        onChangeText={(text) => setEditingItem({ ...editingItem, note: text })}
+                                    />
+                                    <View style={styles.modalActions}>
+                                        <View style={styles.buttonWrapper}>
+                                            <Button title="Annulla" onPress={() => setEditingItem(null)} color="#dc3545" />
+                                        </View>
+                                        <View style={styles.buttonWrapper}>
+                                            <Button title="Salva" onPress={saveEdit} color="#28a745" />
+                                        </View>
                                     </View>
-                                    <View style={styles.buttonWrapper}>
-                                        <Button title="Salva" onPress={saveEdit} color="#28a745" />
-                                    </View>
-                                </View>
-                            </ScrollView>
-                        )}
+                                </ScrollView>
+                            )}
+                        </View>
                     </View>
-                </View>
                 </ActionSheetProvider>
             </Modal>
         </View>

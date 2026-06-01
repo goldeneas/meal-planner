@@ -261,7 +261,6 @@ export default function PlanScreen({ navigation, db }) {
     );
 }
 
-// --- STILI ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     scrollArea: { flex: 1 },

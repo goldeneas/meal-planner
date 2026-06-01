@@ -182,7 +182,10 @@ export async function insertDefaultValues(db) {
             (5, '2026-05-25', 200, 50, 2, 9, 'Latte aperto'),
             (6, '2026-06-10', 500, 100, 1, 13, 'Carne per polpette'),
             (7, '2026-06-15', 200, 50, 1, 41, 'Pesto fresco'),
-            (8, '2026-06-05', 250, 50, 1, 40, 'Mozzarella fresca');
+            (8, '2026-06-05', 250, 50, 1, 40, 'Mozzarella fresca'),
+            (9, '2026-06-03', 5, 2, 3, 36, 'Banane mature'),
+            (10, '2027-12-31', 100, 200, 1, 24, 'Tonno in scatola quasi finito'),
+            (11, '2026-06-02', 1, 2, 3, 29, 'Ultimo yogurt in scadenza');
 
             INSERT OR IGNORE INTO ShoppingItem (id, name, quantity, purchaseDate, unitOfMeasure, purchased) VALUES
             (1, 'Pane fresco', 2, '2026-06-01', 3, 0);

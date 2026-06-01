@@ -27,6 +27,11 @@ const App = () => {
 
                 await createTables(db);
                 await insertDefaultValues(db);
+                
+                const checkDb = await db.getFirstAsync("SELECT COUNT(*) AS count FROM UnitOfMeasure");
+                if (!checkDb || checkDb.count === 0) {
+                    await insertDefaultValues(db);
+                }
 
                 setDatabase(db);
                 console.log("[DB] caricato");
